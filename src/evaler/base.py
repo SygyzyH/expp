@@ -17,20 +17,17 @@ def build_expression(string: str):
                     assert len(stack) == 1, 'Disjointed expression'
                     yield stack.pop()
                     continue
-                if polish_token.priority > 0:
-                    assert len(stack) > 1, f'line: {polish_token.line}, column: {polish_token.column}: Operator missing arguments'
-                    # if polish_token.name == 'EQUAL':
-                    #     logging.debug(stack)
-                    #     assert len(stack) == 2, f'line: {polish_token.line}, column: {polish_token.column}: Expression uses equality result'
-                    # NOTE: The flipped order (rhs first in stack, but second in constructor)
-                    rhs, lhs = stack.pop(), stack.pop()
-                    stack.append(tree.BiTree(lhs, rhs, polish_token))
-                elif polish_token.name == 'FUNC_R':
+                if polish_token.name == 'FUNC_R':
                     assert len(stack) > 0, f'line: {polish_token.line}, column: {polish_token.column}: Function missing argument'
                     stack.append(tree.BiTree(None, stack.pop(), polish_token))
                 elif polish_token.name == 'FUNC_L':
                     assert len(stack) > 0, f'line: {polish_token.line}, column: {polish_token.column}: Function missing argument'
                     stack.append(tree.BiTree(stack.pop(), None, polish_token))
+                elif polish_token.priority > 0:
+                    assert len(stack) > 1, f'line: {polish_token.line}, column: {polish_token.column}: Operator missing arguments'
+                    # NOTE: The flipped order (rhs first in stack, but second in constructor)
+                    rhs, lhs = stack.pop(), stack.pop()
+                    stack.append(tree.BiTree(lhs, rhs, polish_token))
                 else:
                     stack.append(tree.BiTree(None, None, polish_token))
 
@@ -48,6 +45,6 @@ if __name__ == "__main__":
         level=logging.DEBUG,
         format="[%(levelname)s:%(funcName)s:%(lineno)s] %(message)s"
     )
-    for exp in build_expression("f = 2 + 5.x"):
+    for exp in build_expression("sqrt 4 + sqrt 16 * 2]"):
         print(exp)
         print(evaluate(exp))

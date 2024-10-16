@@ -21,17 +21,17 @@ KNOWN_CONSTANTS = {
 }
 
 KNOWN_FUNCTIONS = {
-    'sin',
-    'cos',
-    'tan',
-    'acos',
-    'asin',
-    'atan',
-    'ln',
-    'log2',
-    'log',
-    'exp',
-    'sqrt',
+    'sin': math.sin,
+    'cos': math.cos,
+    'tan': math.tan,
+    'acos': math.acos,
+    'asin': math.asin,
+    'atan': math.atan,
+    'ln': math.log,
+    'log2': math.log2,
+    'log': math.log10,
+    'exp': math.exp,
+    'sqrt': math.sqrt,
 }
 
 class TokenHandler(ABC):
@@ -174,6 +174,21 @@ class ExponantiationHandler(TokenHandler):
     def simplify(node: tree.BiTree):
         ...
 
+class RightFunctionHandler(TokenHandler):
+    @staticmethod
+    def evaluate(node: tree.BiTree | object):
+        func = KNOWN_FUNCTIONS[node.value.value]
+        return func(node.rhs.value.handler.evaluate(node.rhs))
+    
+    @staticmethod
+    def assign(node: tree.BiTree, **assigments):
+        func = KNOWN_FUNCTIONS[node.value.value]
+        return func(node.rhs.value.handler.assign(node.rhs, assigments))
+    
+    @staticmethod
+    def simplify(node: tree.BiTree):
+        ...
+
 class MagnitudeCastHandler(TokenHandler):
     @staticmethod
     def evaluate(node: tree.BiTree | object):
@@ -202,7 +217,7 @@ BASE_TOKENS = [
     Token('C_PAREN', r'\)', None),
     Token('PAREN_BACK', r'\]', None),
     Token('FUNC_L', r'as [' + ''.join(list(KNOWN_MAGNITUDES.keys())) + r']', MagnitudeCastHandler),
-    Token('FUNC_R', r'|'.join(list(KNOWN_FUNCTIONS)), None),
+    Token('FUNC_R', r'|'.join(list(KNOWN_FUNCTIONS)), RightFunctionHandler, priority=5),
     Token('CONST', r'|'.join(list(KNOWN_CONSTANTS)), ConstHandler),
     Token('NAME', r'[a-zA-Z_]+', NamedVariableHandler),
     Token('NEWLINE', r'\n', None),
