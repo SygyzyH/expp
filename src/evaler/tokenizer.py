@@ -2,7 +2,7 @@ import re
 import tokens
 
 def tokenize(string: str):
-    token_specification = [(tkn.name, tkn.regex) for tkn in tokens.TOKENS]
+    token_specification = [(tkn.name, tkn.regex) for tkn in tokens.BASE_TOKENS]
     tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in token_specification)
     line_num = 1
     line_start = 0
@@ -28,9 +28,8 @@ def tokenize(string: str):
             continue
         elif kind == 'MISMATCH':
             raise
-        source_token = next(_ for _ in tokens.TOKENS if _ == kind)
-        
-        yield tokens.Token(
+        source_token = next(_ for _ in tokens.BASE_TOKENS if _ == kind)
+        last_token = tokens.Token(
             source_token.name,
             source_token.regex,
             source_token.handler,
@@ -39,3 +38,7 @@ def tokenize(string: str):
             line_num,
             column,
         )
+
+        yield last_token
+    if last_token.name != 'END_STATEMENT':
+        yield tokens.BASE_TOKENS[0]

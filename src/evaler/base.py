@@ -19,31 +19,27 @@ class Expression:
     @staticmethod
     def _build_expression(string: str) -> tree.BiTree:
         polish_inst = polish.PolishConstructor()
+        stack = []
 
         for token in tokenizer.tokenize(string):
             logging.debug(f"Generated token {token}")
-            polish_inst.consume_token(token)
-        logging.debug(polish_inst.finish())
-
-        stack = []
-        for token in polish_inst.finish():
-            logging.debug(token)
-            if token.priority > 0:
-                assert len(stack) > 1, f'line: {token.line}, column: {token.column}: Operator missing arguments'
-                if token.name == 'EQUAL':
-                    assert len(stack) == 2, f'line: {token.line}, column: {token.column}: Expression uses equality result'
-                # NOTE: The flipped order (rhs first in stack, but second in constructor)
-                rhs, lhs = stack.pop(), stack.pop()
-                stack.append(tree.BiTree(lhs, rhs, token))
-            elif token.name == 'FUNC_R':
-                assert len(stack) > 0, f'line: {token.line}, column: {token.column}: Function missing argument'
-                stack.append(tree.BiTree(None, stack.pop(), token))
-            elif token.name == 'FUNC_L':
-                assert len(stack) > 0, f'line: {token.line}, column: {token.column}: Function missing argument'
-                stack.append(tree.BiTree(stack.pop(), None, token))
-            else:
-                stack.append(tree.BiTree(None, None, token))
-            logging.debug(stack)
+            for polish_token in polish_inst.consume_token(token):
+                logging.debug(f"Polished token {polish_token}")
+                if polish_token.priority > 0:
+                    assert len(stack) > 1, f'line: {polish_token.line}, column: {polish_token.column}: Operator missing arguments'
+                    if polish_token.name == 'EQUAL':
+                        assert len(stack) == 2, f'line: {polish_token.line}, column: {polish_token.column}: Expression uses equality result'
+                    # NOTE: The flipped order (rhs first in stack, but second in constructor)
+                    rhs, lhs = stack.pop(), stack.pop()
+                    stack.append(tree.BiTree(lhs, rhs, polish_token))
+                elif polish_token.name == 'FUNC_R':
+                    assert len(stack) > 0, f'line: {polish_token.line}, column: {polish_token.column}: Function missing argument'
+                    stack.append(tree.BiTree(None, stack.pop(), polish_token))
+                elif polish_token.name == 'FUNC_L':
+                    assert len(stack) > 0, f'line: {polish_token.line}, column: {polish_token.column}: Function missing argument'
+                    stack.append(tree.BiTree(stack.pop(), None, polish_token))
+                else:
+                    stack.append(tree.BiTree(None, None, polish_token))
 
         assert len(stack) == 1, 'Disjointed expression'
 
@@ -54,8 +50,8 @@ if __name__ == "__main__":
     import sys
     logging.basicConfig(
         stream=sys.stderr,
-        level=logging.INFO,
+        level=logging.DEBUG,
         format="[%(levelname)s:%(funcName)s:%(lineno)s] %(message)s"
     )
-    exp = Expression(" as k")
+    exp = Expression("2 + 5 as k * 3 + 2 * 2; 2 + 2")
     print(exp.evaluate())
