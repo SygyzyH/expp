@@ -28,7 +28,7 @@ class PolishConstructor:
         # TODO: FUNC_R doesn't prioritze just the next token with low priority
         elif token.name == 'O_PAREN' or token.name == 'FUNC_R':
             self._stack.append(token)
-        elif token.name == 'EQUAL':
+        elif token.name == 'EQUAL' or token.name == 'ASSIGN':
             self._stack.insert(0, token)
         elif token.name == 'FUNC_L':
             yield token

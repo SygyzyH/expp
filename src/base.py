@@ -17,9 +17,7 @@ class StatmentConstructor:
                 logging.debug(f"Finished statement {self._stack}")
                 assert len(self._stack) == 1, 'Disjointed expression'
                 # Statement was generated
-                yield self._stack.pop()
-                return
-                #return self._stack.pop()
+                return self._stack.pop()
             if polish_token.name == 'FUNC_R':
                 assert len(self._stack) > 0, f'line: {polish_token.line}, column: {polish_token.column}: Function missing argument'
                 self._stack.append(tree.BiTree(None, self._stack.pop(), polish_token))
@@ -34,7 +32,7 @@ class StatmentConstructor:
             else:
                 self._stack.append(tree.BiTree(None, None, polish_token))
         # If no statment was completed, empty yield for now
-        yield
+        return
 
 def evaluate(exp: tree.BiTree):
     return exp.value.handler.evaluate(exp)
