@@ -27,6 +27,8 @@ class PolishConstructor:
                 yield self._stack.pop()
         elif token.name == 'O_PAREN' or token.name == 'FUNC_R':
             self._stack.append(token)
+        elif token.name == 'EQUAL':
+            self._stack.insert(0, token)
         elif token.name == 'FUNC_L':
             yield token
         elif token.priority > 0:

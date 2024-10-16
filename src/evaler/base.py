@@ -13,13 +13,15 @@ def build_expression(string: str):
             for polish_token in polish_inst.consume_token(token):
                 logging.debug(f"Polished token {polish_token}")
                 if polish_token.name == 'END_STATEMENT':
+                    logging.debug(f"Finished statement {stack}")
                     assert len(stack) == 1, 'Disjointed expression'
                     yield stack.pop()
                     continue
                 if polish_token.priority > 0:
                     assert len(stack) > 1, f'line: {polish_token.line}, column: {polish_token.column}: Operator missing arguments'
-                    if polish_token.name == 'EQUAL':
-                        assert len(stack) == 2, f'line: {polish_token.line}, column: {polish_token.column}: Expression uses equality result'
+                    # if polish_token.name == 'EQUAL':
+                    #     logging.debug(stack)
+                    #     assert len(stack) == 2, f'line: {polish_token.line}, column: {polish_token.column}: Expression uses equality result'
                     # NOTE: The flipped order (rhs first in stack, but second in constructor)
                     rhs, lhs = stack.pop(), stack.pop()
                     stack.append(tree.BiTree(lhs, rhs, polish_token))
@@ -46,6 +48,6 @@ if __name__ == "__main__":
         level=logging.DEBUG,
         format="[%(levelname)s:%(funcName)s:%(lineno)s] %(message)s"
     )
-    for exp in build_expression("2 + 5 as k * 3 + 2 * 2; 2 + 2j"):
+    for exp in build_expression("f = 2 + 5.x"):
         print(exp)
         print(evaluate(exp))
