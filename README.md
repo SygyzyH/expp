@@ -7,7 +7,8 @@ Ive written a repo that parsers strings into expressions and solves them / calcu
 
 ## Vision
 Expression evaluator from strings with:
-- orders-of-magnitude.
+- orders-of-magnitude
 - assigments
 - parameters
 - solver
+- complex numbers
