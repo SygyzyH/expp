@@ -1,41 +1,46 @@
 import tokenizer
+import tokens
 import polish
 import tree
 
 import logging
 
-def build_expression(string: str):
-        polish_inst = polish.PolishConstructor()
-        stack = []
+class StatmentConstructor:
+    def __init__(self) -> None:
+        self._polish_inst = polish.PolishConstructor()
+        self._stack = []
 
-        for token in tokenizer.tokenize(string):
-            logging.debug(f"Generated token {token}")
-            for polish_token in polish_inst.consume_token(token):
-                logging.debug(f"Polished token {polish_token}")
-                if polish_token.name == 'END_STATEMENT':
-                    logging.debug(f"Finished statement {stack}")
-                    assert len(stack) == 1, 'Disjointed expression'
-                    yield stack.pop()
-                    continue
-                if polish_token.name == 'FUNC_R':
-                    assert len(stack) > 0, f'line: {polish_token.line}, column: {polish_token.column}: Function missing argument'
-                    stack.append(tree.BiTree(None, stack.pop(), polish_token))
-                elif polish_token.name == 'FUNC_L':
-                    assert len(stack) > 0, f'line: {polish_token.line}, column: {polish_token.column}: Function missing argument'
-                    stack.append(tree.BiTree(stack.pop(), None, polish_token))
-                elif polish_token.priority > 0:
-                    assert len(stack) > 1, f'line: {polish_token.line}, column: {polish_token.column}: Operator missing arguments'
-                    # NOTE: The flipped order (rhs first in stack, but second in constructor)
-                    rhs, lhs = stack.pop(), stack.pop()
-                    stack.append(tree.BiTree(lhs, rhs, polish_token))
-                else:
-                    stack.append(tree.BiTree(None, None, polish_token))
+    def consume_token(self, token: tokens.Token):
+        for polish_token in self._polish_inst.consume_token(token):
+            logging.debug(f"Polished token {polish_token}")
+            if polish_token.name == 'END_STATEMENT':
+                logging.debug(f"Finished statement {self._stack}")
+                assert len(self._stack) == 1, 'Disjointed expression'
+                # Statement was generated
+                yield self._stack.pop()
+                return
+                #return self._stack.pop()
+            if polish_token.name == 'FUNC_R':
+                assert len(self._stack) > 0, f'line: {polish_token.line}, column: {polish_token.column}: Function missing argument'
+                self._stack.append(tree.BiTree(None, self._stack.pop(), polish_token))
+            elif polish_token.name == 'FUNC_L':
+                assert len(self._stack) > 0, f'line: {polish_token.line}, column: {polish_token.column}: Function missing argument'
+                self._stack.append(tree.BiTree(self._stack.pop(), None, polish_token))
+            elif polish_token.priority > 0:
+                assert len(self._stack) > 1, f'line: {polish_token.line}, column: {polish_token.column}: Operator missing arguments'
+                # NOTE: The flipped order (rhs first in stack, but second in constructor)
+                rhs, lhs = self._stack.pop(), self._stack.pop()
+                self._stack.append(tree.BiTree(lhs, rhs, polish_token))
+            else:
+                self._stack.append(tree.BiTree(None, None, polish_token))
+        # If no statment was completed, empty yield for now
+        yield
 
 def evaluate(exp: tree.BiTree):
     return exp.value.handler.evaluate(exp)
 
 def assign(exp: tree.BiTree, **parameters):
-    return exp.value.handler.assign(exp, parameters)
+    return exp.value.handler.assign(exp, **parameters)
 
 if __name__ == "__main__":
     import logging
@@ -45,6 +50,10 @@ if __name__ == "__main__":
         level=logging.DEBUG,
         format="[%(levelname)s:%(funcName)s:%(lineno)s] %(message)s"
     )
-    for exp in build_expression("sqrt 4 + sqrt 16 * 2]"):
-        print(exp)
-        print(evaluate(exp))
+
+    statment = StatmentConstructor()
+    for token in tokenizer.tokenize("16 * x"):
+        for exp in statment.consume_token(token):
+            print(exp)
+            if exp is not None:
+                print(assign(exp, x=6))
