@@ -4,20 +4,7 @@ import tree
 
 import logging
 
-
-class Expression:
-    def __init__(self, string) -> None:
-        self.string = string
-        self.tree = self._build_expression(string)
-
-    def evaluate(self):
-        return self.tree.value.handler.evaluate(self.tree)
-
-    def assign(self, **parameters):
-        return self.tree.value.handler.assign(self.tree, parameters)
-    
-    @staticmethod
-    def _build_expression(string: str) -> tree.BiTree:
+def build_expression(string: str):
         polish_inst = polish.PolishConstructor()
         stack = []
 
@@ -25,6 +12,10 @@ class Expression:
             logging.debug(f"Generated token {token}")
             for polish_token in polish_inst.consume_token(token):
                 logging.debug(f"Polished token {polish_token}")
+                if polish_token.name == 'END_STATEMENT':
+                    assert len(stack) == 1, 'Disjointed expression'
+                    yield stack.pop()
+                    continue
                 if polish_token.priority > 0:
                     assert len(stack) > 1, f'line: {polish_token.line}, column: {polish_token.column}: Operator missing arguments'
                     if polish_token.name == 'EQUAL':
@@ -41,9 +32,11 @@ class Expression:
                 else:
                     stack.append(tree.BiTree(None, None, polish_token))
 
-        assert len(stack) == 1, 'Disjointed expression'
+def evaluate(exp: tree.BiTree):
+    return exp.value.handler.evaluate(exp)
 
-        return stack.pop()
+def assign(exp: tree.BiTree, **parameters):
+    return exp.value.handler.assign(exp, parameters)
 
 if __name__ == "__main__":
     import logging
@@ -53,5 +46,6 @@ if __name__ == "__main__":
         level=logging.DEBUG,
         format="[%(levelname)s:%(funcName)s:%(lineno)s] %(message)s"
     )
-    exp = Expression("2 + 5 as k * 3 + 2 * 2; 2 + 2")
-    print(exp.evaluate())
+    for exp in build_expression("2 + 5 as k * 3 + 2 * 2; 2 + 2j"):
+        print(exp)
+        print(evaluate(exp))

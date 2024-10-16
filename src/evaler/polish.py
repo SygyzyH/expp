@@ -9,6 +9,7 @@ class PolishConstructor:
         if token.name == 'END_STATEMENT':
             while len(self._stack) > 0:
                 yield self._stack.pop()
+            yield token
             return
         if token.name == 'PAREN_BACK':
             # TODO Think if this feature is any good.
