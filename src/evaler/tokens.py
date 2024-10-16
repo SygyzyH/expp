@@ -189,7 +189,8 @@ class MagnitudeCastHandler(TokenHandler):
     def simplify(node: tree.BiTree):
         ...
 
-TOKENS = [
+BASE_TOKENS = [
+    Token('END_STATEMENT', r';', None),
     Token('NUMBER', r'-?\d+(\.\d*)?j?[' + ''.join(list(KNOWN_MAGNITUDES.keys())) + r']?', NumberHandler),
     Token('EQUAL', r'=', None, priority=1),
     Token('ADD', r'\+', AdditionHandler, priority=2),
