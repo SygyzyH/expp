@@ -15,7 +15,10 @@ def tokenize(string: str):
             if value[-1] in tokens.KNOWN_MAGNITUDES:
                 scalar = tokens.KNOWN_MAGNITUDES[value[-1]]
                 value = value[:-1]
-            value = float(value) if '.' in value else int(value)
+            if 'j' in value:
+                value = complex(value)
+            else:
+                value = float(value) if '.' in value else int(value)
             value *= scalar
         elif kind == 'NEWLINE':
             line_start = mo.end()

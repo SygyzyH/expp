@@ -54,5 +54,5 @@ if __name__ == "__main__":
         level=logging.INFO,
         format="[%(levelname)s:%(funcName)s:%(lineno)s] %(message)s"
     )
-    exp = Expression("\pi + 1000 as k")
+    exp = Expression("\pi + 1000j as k")
     print(exp.evaluate())

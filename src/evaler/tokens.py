@@ -190,7 +190,7 @@ class MagnitudeCastHandler(TokenHandler):
         ...
 
 TOKENS = [
-    Token('NUMBER', r'-?\d+(\.\d*)?[' + ''.join(list(KNOWN_MAGNITUDES.keys())) + r']?', NumberHandler),
+    Token('NUMBER', r'-?\d+(\.\d*)?j?[' + ''.join(list(KNOWN_MAGNITUDES.keys())) + r']?', NumberHandler),
     Token('EQUAL', r'=', None, priority=1),
     Token('ADD', r'\+', AdditionHandler, priority=2),
     Token('SUB', r'-', SubtractionHandler, priority=2),
