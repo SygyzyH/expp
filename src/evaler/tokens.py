@@ -192,7 +192,7 @@ class MagnitudeCastHandler(TokenHandler):
 BASE_TOKENS = [
     Token('END_STATEMENT', r';', None),
     Token('NUMBER', r'-?\d+(\.\d+)?j?[' + ''.join(list(KNOWN_MAGNITUDES.keys())) + r']?', NumberHandler),
-    Token('EQUAL', r'=', None, priority=1),
+    Token('EQUAL', r'=', None, priority=1), # NOTE: Priority requires to be treated as an operand by polish
     Token('ADD', r'\+', AdditionHandler, priority=2),
     Token('SUB', r'-', SubtractionHandler, priority=2),
     Token('POW', r'\^|\*\*', ExponantiationHandler, priority=4),
