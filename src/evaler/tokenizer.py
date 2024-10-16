@@ -26,6 +26,8 @@ def tokenize(string: str):
             continue
         elif kind == 'SKIP':
             continue
+        elif kind == 'MISMATCH':
+            raise
         source_token = next(_ for _ in tokens.TOKENS if _ == kind)
         
         yield tokens.Token(

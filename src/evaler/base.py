@@ -29,20 +29,23 @@ class Expression:
         for token in polish_inst.finish():
             logging.debug(token)
             if token.priority > 0:
+                assert len(stack) > 1, f'line: {token.line}, column: {token.column}: Operator missing arguments'
                 if token.name == 'EQUAL':
                     assert len(stack) == 2, f'line: {token.line}, column: {token.column}: Expression uses equality result'
                 # NOTE: The flipped order (rhs first in stack, but second in constructor)
                 rhs, lhs = stack.pop(), stack.pop()
                 stack.append(tree.BiTree(lhs, rhs, token))
             elif token.name == 'FUNC_R':
+                assert len(stack) > 0, f'line: {token.line}, column: {token.column}: Function missing argument'
                 stack.append(tree.BiTree(None, stack.pop(), token))
             elif token.name == 'FUNC_L':
+                assert len(stack) > 0, f'line: {token.line}, column: {token.column}: Function missing argument'
                 stack.append(tree.BiTree(stack.pop(), None, token))
             else:
                 stack.append(tree.BiTree(None, None, token))
             logging.debug(stack)
 
-        assert len(stack) == 1, 'Unknown error while expanding expression'
+        assert len(stack) == 1, 'Disjointed expression'
 
         return stack.pop()
 
@@ -54,5 +57,5 @@ if __name__ == "__main__":
         level=logging.INFO,
         format="[%(levelname)s:%(funcName)s:%(lineno)s] %(message)s"
     )
-    exp = Expression("\pi + 1000j as k")
+    exp = Expression(" as k")
     print(exp.evaluate())
