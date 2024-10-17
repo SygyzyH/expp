@@ -41,6 +41,9 @@ def main():
         format="[%(levelname)s:%(funcName)s:%(lineno)s] %(message)s"
     )
 
+    import tokens
+    print(next(_ for _ in tokens.BASE_TOKENS if _ == 'NUMBER'))
+
     read_loop()
 
 

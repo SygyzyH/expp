@@ -40,6 +40,9 @@ def evaluate(exp: tree.BiTree):
 def assign(exp: tree.BiTree, **parameters):
     return exp.value.handler.assign(exp, **parameters)
 
+def derive(exp: tree.BiTree, variable_name: str):
+    return exp.value.handler.derive(exp, variable_name)
+
 if __name__ == "__main__":
     import logging
     import sys
@@ -51,7 +54,7 @@ if __name__ == "__main__":
 
     statment = StatmentConstructor()
     for token in tokenizer.tokenize("16 * x"):
-        for exp in statment.consume_token(token):
-            print(exp)
-            if exp is not None:
-                print(assign(exp, x=6))
+        exp = statment.consume_token(token)
+        if exp is not None:
+            print(derive(exp, 'x'))
+            print(assign(derive(exp, 'x'), x=2))
