@@ -1,4 +1,4 @@
-import tokens
+import syntax
 import statement
 import tokenizer
 import base
@@ -21,7 +21,7 @@ TODO
 def read_loop():
     print(__doc__)
     # Default directive
-    directive = tokens.KNOWN_DIRECTIVES['eval']
+    directive = syntax.KNOWN_DIRECTIVES['eval']
     expression_history = []
     last_result = None
     
@@ -42,7 +42,7 @@ def read_loop():
         
             exp = None
             if first_token.name == 'DIRECTIVE':
-                directive = tokens.KNOWN_DIRECTIVES[first_token.value[1:]]
+                directive = syntax.KNOWN_DIRECTIVES[first_token.value[1:]]
             else:
                 # NOTE: The first token is not thrown away, it stays in the statement class state.
                 # The only way we complete an expression here is if the tokenizer returne 'END' as the first token,
@@ -75,7 +75,7 @@ def read_loop():
                             print(result)
                         last_result = result
                         # Default directive after first succesfull command
-                        directive = tokens.KNOWN_DIRECTIVES['assign']
+                        directive = syntax.KNOWN_DIRECTIVES['assign']
             
         except KeyboardInterrupt:
             logging.info('Quit')

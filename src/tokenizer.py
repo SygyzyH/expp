@@ -1,8 +1,8 @@
 import re
-import tokens
+import syntax
 
 def tokenize(string: str):
-    token_specification = [(tkn.name, tkn.regex) for tkn in tokens.BASE_TOKENS]
+    token_specification = [(tkn.name, tkn.regex) for tkn in syntax.BASE_TOKENS]
     tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in token_specification)
     line_num = 1
     line_start = 0
@@ -13,8 +13,8 @@ def tokenize(string: str):
         column = mo.start() - line_start
         if kind == 'NUMBER':
             scalar = 1
-            if value[-1] in tokens.KNOWN_MAGNITUDES:
-                scalar = tokens.KNOWN_MAGNITUDES[value[-1]]
+            if value[-1] in syntax.KNOWN_MAGNITUDES:
+                scalar = syntax.KNOWN_MAGNITUDES[value[-1]]
                 value = value[:-1]
             if 'j' in value:
                 value = complex(value)
@@ -31,8 +31,8 @@ def tokenize(string: str):
             continue
         elif kind == 'MISMATCH':
             raise SyntaxError(f'line: {line_num}, column: {column}: Mismatched symbol {value}')
-        source_token = next(_ for _ in tokens.BASE_TOKENS if _ == kind)
-        last_token = tokens.Token(
+        source_token = next(_ for _ in syntax.BASE_TOKENS if _ == kind)
+        last_token = syntax.Token(
             source_token.name,
             source_token.regex,
             source_token.handler,
@@ -44,4 +44,4 @@ def tokenize(string: str):
 
         yield last_token
     if last_token is None or last_token.name != 'END_STATEMENT':
-        yield tokens.BASE_TOKENS[0]
+        yield syntax.BASE_TOKENS[0]

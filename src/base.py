@@ -18,7 +18,7 @@ def derive(exp: tree.BiTree, variable_name: str, *_, **__):
     return exp.value.handler.derive(exp, variable_name)
 
 def solve(exp: tree.BiTree, variable: str, max_iter=MAX_SOLUTION_DEPTH, epsil=SOLUTION_EPSIL, tolerance=SOLUTION_TOLERANCE, **parameters):
-    from tokens import default_token
+    from syntax import default_token
     if exp.value.name == 'EQUAL':
         new_token = default_token('SUB')
         new_token.value = '-'

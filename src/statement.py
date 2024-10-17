@@ -1,4 +1,4 @@
-import tokens
+import syntax
 import polish
 import tree
 
@@ -9,7 +9,7 @@ class StatmentConstructor:
         self._polish_inst = polish.PolishConstructor()
         self._stack = []
 
-    def consume_token(self, token: tokens.Token):
+    def consume_token(self, token: syntax.Token):
         for polish_token in self._polish_inst.consume_token(token):
             logging.debug(f"Polished token {polish_token}")
             if polish_token.name == 'END_STATEMENT':

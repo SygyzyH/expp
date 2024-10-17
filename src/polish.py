@@ -1,11 +1,11 @@
 import tokenizer
-import tokens
+import syntax
 
 class PolishConstructor:
     def __init__(self) -> None:
-        self._stack: list[tokens.Token] = []
+        self._stack: list[syntax.Token] = []
 
-    def consume_token(self, token: tokens.Token):
+    def consume_token(self, token: syntax.Token):
         assert token.name != 'DIRECTIVE', f'line: {token.line}, column: {token.column}: Directive in mathematical expression'
         if token.name == 'END_STATEMENT':
             while len(self._stack) > 0:
@@ -18,7 +18,7 @@ class PolishConstructor:
             # You can then "PAREN_BACK" to where its missing, and add it there.
             # The problem is that the stack doesn't remmember the operators and operands after an operation
             # is concluded
-            self._stack.insert(max(0, len(self._stack) - 1), tokens.Token('O_PAREN', '(', token.line, token.column, None))
+            self._stack.insert(max(0, len(self._stack) - 1), syntax.Token('O_PAREN', '(', token.line, token.column, None))
         if token.name == 'C_PAREN' or token.name == 'PAREN_BACK':
             while self._stack[-1].name != 'O_PAREN':
                 yield self._stack.pop()
