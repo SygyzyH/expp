@@ -301,7 +301,7 @@ class ExponantiationHandler(TokenHandler):
         lhs = node.lhs.value.handler.derive(node.lhs, variable_name)
         rhs = node.rhs.value.handler.derive(node.rhs, variable_name)
 
-        new_value = default_token('R_FUNC')
+        new_value = default_token('FUNC_R')
         new_value.value = 'ln'
         new_value.column = node.value.column
         new_value.line = node.value.line
