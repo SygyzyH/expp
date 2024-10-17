@@ -61,7 +61,7 @@ def read_loop():
                     expression_history.append(exp)
                     print(f"{len(expression_history)}: {base.stringify(exp)}")
                     if exp.value.name == 'NAME' and exp.value.value != '_':
-                        parameters.append(exp.value.name)
+                        parameters.append(exp.value.value)
                         print(f"param {len(parameters)}: {base.stringify(exp)}")
                     elif exp.value.name == 'EQUAL' and exp.lhs.value.name == 'NAME':
                         assigments[exp.lhs.value.value] = base.assign(exp.rhs, **assigments)
