@@ -52,7 +52,7 @@ def assign(exp: tree.BiTree, **parameters):
 def derive(exp: tree.BiTree, variable_name: str):
     return exp.value.handler.derive(exp, variable_name)
 
-def solve(exp, variable, max_iter=MAX_SOLUTION_DEPTH, epsil=SOLUTION_EPSIL, tolerance=SOLUTION_TOLERANCE, **parameters):
+def solve(exp: tree.BiTree, variable: str, max_iter=MAX_SOLUTION_DEPTH, epsil=SOLUTION_EPSIL, tolerance=SOLUTION_TOLERANCE, **parameters):
     if exp.value.name == 'EQUAL':
         new_token = tokens.default_token('SUB')
         new_token.value = '-'
@@ -84,6 +84,9 @@ def solve(exp, variable, max_iter=MAX_SOLUTION_DEPTH, epsil=SOLUTION_EPSIL, tole
     logging.debug(f'Failed to converge in {max_iter} iterations, current estimate {x0}')
     return x0
 
+def stringify(exp: tree.BiTree) -> str:
+    return (stringify(exp.lhs) if exp.lhs is not None else '') + str(exp.value.value) + (stringify(exp.rhs) if exp.rhs is not None else '')
+
 if __name__ == "__main__":
     import logging
     import sys
@@ -94,9 +97,10 @@ if __name__ == "__main__":
     )
 
     statment = StatmentConstructor()
-    for token in tokenizer.tokenize("1 + 1 - 1 + 1 = x"):
+    for token in tokenizer.tokenize("1 + 1 - 1 + 1 + x * x"):
         exp = statment.consume_token(token)
         if exp is not None:
             #print(exp)
             #print(derive(exp, 'x'))
-            print(solve(exp, 'x'))
+            print(stringify(derive(exp, 'x')))
+            #print(solve(exp, 'x'))
