@@ -65,7 +65,7 @@ def read_loop():
                         print(f"param {len(parameters)}: {base.stringify(exp)}")
                     elif exp.value.name == 'EQUAL' and exp.lhs.value.name == 'NAME':
                         assigments[exp.lhs.value.value] = base.assign(exp.rhs, **assigments)
-                        print(f"assign {len(assigments)}: {base.stringify(exp)}")
+                        print(f"assign {len(assigments) - 1}: {base.stringify(exp)}")
                     else:
                         result = directive(exp, *parameters, **assigments)
                         print("result: ", end='')
