@@ -6,6 +6,7 @@ class PolishConstructor:
         self._stack: list[tokens.Token] = []
 
     def consume_token(self, token: tokens.Token):
+        assert token.name != 'DIRECTIVE', f'line: {token.line}, column: {token.column}: Directive in mathematical expression'
         if token.name == 'END_STATEMENT':
             while len(self._stack) > 0:
                 yield self._stack.pop()
@@ -28,7 +29,9 @@ class PolishConstructor:
         # TODO: FUNC_R doesn't prioritze just the next token with low priority
         elif token.name == 'O_PAREN' or token.name == 'FUNC_R':
             self._stack.append(token)
-        elif token.name == 'EQUAL' or token.name == 'ASSIGN':
+        elif token.name == 'EQUAL':
+            while len(self._stack) != 0:
+                yield self._stack.pop()
             self._stack.insert(0, token)
         elif token.name == 'FUNC_L':
             yield token
