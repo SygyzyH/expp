@@ -1,5 +1,4 @@
 import tokenizer
-import tokens
 import tree
 
 import logging
@@ -9,18 +8,19 @@ MAX_SOLUTION_DEPTH = 20
 SOLUTION_EPSIL = 1e-6
 SOLUTION_TOLERANCE = 1e-9
 
-def evaluate(exp: tree.BiTree):
+def evaluate(exp: tree.BiTree, *_, **__):
     return exp.value.handler.evaluate(exp)
 
-def assign(exp: tree.BiTree, **parameters):
-    return exp.value.handler.assign(exp, **parameters)
+def assign(exp: tree.BiTree, *_, **assigments):
+    return exp.value.handler.assign(exp, **assigments)
 
-def derive(exp: tree.BiTree, variable_name: str):
+def derive(exp: tree.BiTree, variable_name: str, *_, **__):
     return exp.value.handler.derive(exp, variable_name)
 
 def solve(exp: tree.BiTree, variable: str, max_iter=MAX_SOLUTION_DEPTH, epsil=SOLUTION_EPSIL, tolerance=SOLUTION_TOLERANCE, **parameters):
+    from tokens import default_token
     if exp.value.name == 'EQUAL':
-        new_token = tokens.default_token('SUB')
+        new_token = default_token('SUB')
         new_token.value = '-'
         new_token.line = exp.value.line
         new_token.column = exp.value.column

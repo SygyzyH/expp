@@ -6,6 +6,7 @@ def tokenize(string: str):
     tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in token_specification)
     line_num = 1
     line_start = 0
+    last_token = None
     for mo in re.finditer(tok_regex, string):
         kind = mo.lastgroup
         value = mo.group()
@@ -20,6 +21,8 @@ def tokenize(string: str):
             else:
                 value = float(value) if '.' in value else int(value)
             value *= scalar
+        elif kind == 'HISTORY':
+            value = int(value[1:])
         elif kind == 'NEWLINE':
             line_start = mo.end()
             line_num += 1
@@ -27,7 +30,7 @@ def tokenize(string: str):
         elif kind == 'SKIP':
             continue
         elif kind == 'MISMATCH':
-            raise
+            raise SyntaxError(f'line: {line_num}, column: {column}: Mismatched symbol {value}')
         source_token = next(_ for _ in tokens.BASE_TOKENS if _ == kind)
         last_token = tokens.Token(
             source_token.name,
@@ -40,5 +43,5 @@ def tokenize(string: str):
         )
 
         yield last_token
-    if last_token.name != 'END_STATEMENT':
+    if last_token is None or last_token.name != 'END_STATEMENT':
         yield tokens.BASE_TOKENS[0]

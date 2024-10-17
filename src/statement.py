@@ -2,6 +2,8 @@ import tokens
 import polish
 import tree
 
+import logging
+
 class StatmentConstructor:
     def __init__(self) -> None:
         self._polish_inst = polish.PolishConstructor()
@@ -12,6 +14,9 @@ class StatmentConstructor:
             logging.debug(f"Polished token {polish_token}")
             if polish_token.name == 'END_STATEMENT':
                 logging.debug(f"Finished statement {self._stack}")
+                if len(self._stack) == 0:
+                    # Empty expression
+                    return tree.BiTree(None, None, None)
                 assert len(self._stack) == 1, 'Disjointed expression'
                 # Statement was generated
                 return self._stack.pop()
@@ -34,3 +39,6 @@ class StatmentConstructor:
                 self._stack.append(tree.BiTree(None, None, polish_token))
         # If no statment was completed, empty yield for now
         return
+    
+    def consume_exp(self, exp: tree.BiTree):
+        self._stack.append(exp)

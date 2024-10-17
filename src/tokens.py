@@ -3,7 +3,14 @@ from abc import ABC, abstractmethod
 import math
 import copy
 
+import base
 import tree
+
+KNOWN_DIRECTIVES = {
+    'eval': base.evaluate,
+    'assign': base.assign,
+    'derive': base.derive,
+}
 
 KNOWN_MAGNITUDES = {
     "T": 1e12,
@@ -364,7 +371,7 @@ class RightFunctionHandler(TokenHandler):
     @staticmethod
     def assign(node: tree.BiTree, **assigments):
         func = KNOWN_FUNCTIONS[node.value.value]
-        return func(node.rhs.value.handler.assign(node.rhs, assigments))
+        return func(node.rhs.value.handler.assign(node.rhs, **assigments))
     
     @staticmethod
     def simplify(node: tree.BiTree):
@@ -413,8 +420,9 @@ class MagnitudeCastHandler(TokenHandler):
 
 BASE_TOKENS = [
     Token('END_STATEMENT', r';', None),
+    Token('DIRECTIVE', r'\$' + r'|\$'.join(list(KNOWN_DIRECTIVES.keys())), None),
+    Token('HISTORY', r'\$[0-9]+', None),
     Token('NUMBER', r'-?\d+(\.\d+)?j?[' + ''.join(list(KNOWN_MAGNITUDES.keys())) + r']?', NumberHandler),
-    Token('ASSIGN', r':=', None, priority=1),
     Token('EQUAL', r'=', None, priority=1), # NOTE: Priority requires to be treated as an operand by polish
     Token('ADD', r'\+', AdditionHandler, priority=2),
     Token('SUB', r'-', SubtractionHandler, priority=2),
