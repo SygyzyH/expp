@@ -128,7 +128,7 @@ class NamedVariableHandler(TokenHandler):
 
     @staticmethod
     def assign(node: tree.BiTree, **assigments):
-        return assigments[node.value.value]
+        return base.assign(assigments[node.value.value], **assigments)
     
     @staticmethod
     def simplify(node: tree.BiTree):

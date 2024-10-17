@@ -21,7 +21,6 @@ TODO
 def read_loop():
     print(__doc__)
     # Default directive
-    directive = syntax.KNOWN_DIRECTIVES['eval']
     expression_history = []
     last_result = None
     
@@ -29,6 +28,7 @@ def read_loop():
         try:
             line = input(">>> ")
 
+            directive = syntax.KNOWN_DIRECTIVES['assign']
             assigments = {'_': last_result}
             parameters = []
         
@@ -64,9 +64,10 @@ def read_loop():
                         parameters.append(exp.value.value)
                         print(f"param {len(parameters)}: {base.stringify(exp)}")
                     elif exp.value.name == 'EQUAL' and exp.lhs.value.name == 'NAME':
-                        assigments[exp.lhs.value.value] = base.assign(exp.rhs, **assigments)
+                        assigments[exp.lhs.value.value] = exp.rhs
                         print(f"assign {len(assigments) - 1}: {base.stringify(exp)}")
                     else:
+                        print(directive, exp, parameters, assigments)
                         result = directive(exp, *parameters, **assigments)
                         print("result: ", end='')
                         if isinstance(result, tree.BiTree):
@@ -74,8 +75,6 @@ def read_loop():
                         else:
                             print(result)
                         last_result = result
-                        # Default directive after first succesfull command
-                        directive = syntax.KNOWN_DIRECTIVES['assign']
             
         except KeyboardInterrupt:
             logging.info('Quit')
