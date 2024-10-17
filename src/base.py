@@ -94,7 +94,7 @@ if __name__ == "__main__":
     )
 
     statment = StatmentConstructor()
-    for token in tokenizer.tokenize("1 + 1 - 1"):
+    for token in tokenizer.tokenize("1 + 1 - 1 + 1 = x"):
         exp = statment.consume_token(token)
         if exp is not None:
             #print(exp)

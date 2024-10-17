@@ -39,7 +39,7 @@ class PolishConstructor:
             if len(self._stack) == 0 or token.priority > self._stack[-1].priority:
                 self._stack.append(token)
             else:
-                while len(self._stack) != 0 and token.priority < self._stack[-1].priority:
+                while len(self._stack) != 0 and token.priority <= self._stack[-1].priority:
                     yield self._stack.pop()
                 self._stack.append(token)
         else:
