@@ -56,14 +56,17 @@ class TextContainer:
         self.col = 0
     
     def getbox(self, row, col, max_row, max_col, empty_char=" "):
+        # TODO: Optimize me!
         final = [empty_char * max_col] * max_row
-        for r in range(row, max_row):
-            for c in range(col, max_col):
+        for r in range(row, row + max_row):
+            nr = r - row
+            for c in range(col, col + max_col):
+                nc = c - col
                 try:
                     char = self._text[r][c]
                 except:
                     char = empty_char
-                final[r] = final[r][:c] + char + final[r][c:]
+                final[nr] = final[nr][:nc] + char + final[nr][nc:]
                 
         return final
     
@@ -122,10 +125,11 @@ def _start(stdscr: curses.window):
         input_window.clear()
         irows, icols = input_window.getmaxyx()
         # Need to account for borders, so actual size is smaller
-        for i, line in enumerate(container.getbox(max(0, container.row - irows), 0, irows - 2, icols - 1)):
+        view = irows * (container.row // irows), (icols - 2) * (container.col // (icols - 2))
+        for i, line in enumerate(container.getbox(*view, irows - 2, icols - 1)):
             input_window.move(i + 1, 1)
             input_window.addstr(line)
-        input_window.move(container.row + 1, container.col + 1)
+        input_window.move(container.row % (irows - 2) + 1, container.col % (icols - 2) + 1)
         input_window.border()
 
         #stdscr.clear()
@@ -150,10 +154,13 @@ def _start(stdscr: curses.window):
                 if len(str(e)) >= ocols - 1:
                         i += 1
 
-                last_input_cursor = input_window.getyx()
-                offending_character = input_window.inch(line_number + 1, e.col + 1)
-                input_window.addch(line_number + 1, e.col + 1, offending_character, curses.color_pair(1))
-                input_window.move(*last_input_cursor)
+                if e.col + 1 >= view[1] and e.col + 1 < view[1] + icols:
+                    if view[1] > 0:
+                        e.col %= view[1]
+                    last_input_cursor = input_window.getyx()
+                    offending_character = input_window.inch(line_number + 1, e.col + 1)
+                    input_window.addch(line_number + 1, e.col + 1, offending_character, curses.color_pair(1))
+                    input_window.move(*last_input_cursor)
             except Exception as e:
                 output_window.addnstr(f"{e.__class__.__name__}: {str(e)}", -1)
                 if len(f"{e.__class__.__name__}: {str(e)}") >= ocols - 1:
