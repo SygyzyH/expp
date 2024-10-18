@@ -7,6 +7,7 @@ def tokenize(string: str):
     tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in token_specification)
     line_num = 1
     line_start = 0
+    column = 0
     last_token = None
     for mo in re.finditer(tok_regex, string):
         kind = mo.lastgroup
@@ -47,4 +48,8 @@ def tokenize(string: str):
 
         yield last_token
     if last_token is None or last_token.name != 'END_STATEMENT':
-        yield syntax.BASE_TOKENS[0]
+        terminator = syntax.default_token('END_STATEMENT')
+        terminator.line = line_num
+        terminator.column = column
+
+        yield terminator

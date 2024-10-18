@@ -1,8 +1,12 @@
 import syntax
+import syntax_error
 import statement
 import tokenizer
 import base
 import tree
+
+import logging
+import inspect
 
 def consume_line(line: str, expression_history, result_history):
     directive = syntax.KNOWN_DIRECTIVES['assign']
@@ -43,14 +47,25 @@ def consume_line(line: str, expression_history, result_history):
         if exp is not None:
             expression_history.append(exp)
             print(f"{len(expression_history)}: {base.stringify(exp)}")
-            if exp.value.name == 'NAME' and exp.value.value != '_':
+            # Number of parameters directive has, that are positional and have no default, excluding the input expression.
+            required_parameters = len(list(
+                filter(
+                    lambda param: param.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD and param.default == inspect.Parameter.empty,
+                    inspect.signature(directive).parameters.values()
+                )
+            )) - 1
+            if len(parameters) < required_parameters and exp.value.name == 'NAME' and exp.value.value != '_':
                 parameters.append(exp.value.value)
                 print(f"param {len(parameters)}: {base.stringify(exp)}")
             elif exp.value.name == 'EQUAL' and exp.lhs.value.name == 'NAME':
                 assigments[exp.lhs.value.value] = exp.rhs
                 print(f"assign {len(assigments) - 1}: {base.stringify(exp)}")
             else:
-                result = directive(exp, *parameters, **assigments)
+                logging.debug(f'running {directive.__name__} on {exp}')
+                try:
+                    result = directive(exp, *parameters, **assigments)
+                except Exception as e:
+                    raise syntax_error.SyntaxError(token.line, token.column, f'Directive "{directive.__name__}" failed: {e.__class__.__name__}: {str(e)}')
                 if isinstance(result, tree.BiTree):
                     result_history.append(result)
                 else:
@@ -59,3 +74,4 @@ def consume_line(line: str, expression_history, result_history):
                     result_history.append(tree.BiTree(None, None, new_node))
                 print(f"result {len(result_history)}: {base.stringify(result_history[-1])}")
                 return base.stringify(result_history[-1])
+    raise syntax_error.SyntaxError(0, 0, 'Failed to construct enough expressions to perform directive')
