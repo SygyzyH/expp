@@ -14,7 +14,13 @@ __doc__ = \
 Use this parser to calculate expressions including magnitudes, complex numbers, and parameters.
 
 Howto:
-TODO
+- Choose a directive 
+    - eval: evaluate an expression (without knowing argument values)
+    - assign: (DEFAULT) assign all known variables and evaluate
+    - derive: derive expression with respect to argument
+    - solve: find roots of expression with all known variables
+- Write expressions
+- Access previously typed expressions with $<expression number> and results with $$<result number>
 """
 
 
@@ -82,7 +88,7 @@ def read_loop():
                             new_node = syntax.default_token('NUMBER')
                             new_node.value = result
                             result_history.append(tree.BiTree(None, None, new_node))
-                        print(f"result {len(result_history) + 1}: {base.stringify(result_history[-1])}")
+                        print(f"result {len(result_history)}: {base.stringify(result_history[-1])}")
             
         except KeyboardInterrupt:
             logging.info('Quit')

@@ -10,6 +10,7 @@ KNOWN_DIRECTIVES = {
     'eval': base.evaluate,
     'assign': base.assign,
     'derive': base.derive,
+    'solve': base.solve,
 }
 
 KNOWN_MAGNITUDES = {

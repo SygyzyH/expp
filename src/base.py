@@ -26,14 +26,15 @@ def solve(exp: tree.BiTree, variable: str, max_iter=MAX_SOLUTION_DEPTH, epsil=SO
         new_token.column = exp.value.column
         exp = copy.copy(exp)
         exp.value = new_token
-    print(exp)
 
     x0 = 1.0
     prime = derive(exp, variable)
+    new_token = default_token('NUMBER')
     
     for _ in range(max_iter):
-        y = assign(exp, **{variable: x0}, **parameters)
-        y_prime = assign(prime, **{variable: x0}, **parameters)
+        new_token.value = x0
+        y = assign(exp, **{variable: tree.BiTree(None, None, new_token)}, **parameters)
+        y_prime = assign(prime, **{variable: tree.BiTree(None, None, new_token)}, **parameters)
     
         if abs(y_prime) < epsil:
             logging.debug(f'Found approximate solution, stopping early')
