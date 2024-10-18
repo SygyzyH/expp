@@ -10,6 +10,7 @@ KNOWN_DIRECTIVES = {
     'eval': base.evaluate,
     'assign': base.assign,
     'derive': base.derive,
+    'simplify': base.simplify,
     'solve': base.solve,
 }
 
@@ -111,7 +112,7 @@ class NumberHandler(TokenHandler):
     
     @staticmethod
     def simplify(node: tree.BiTree):
-        return node.value.value
+        return node
     
     @staticmethod
     def derive(node: tree.BiTree, variable_name: str):
@@ -130,7 +131,7 @@ class ConstHandler(TokenHandler):
     
     @staticmethod
     def simplify(node: tree.BiTree):
-        return KNOWN_CONSTANTS['\\' + node.value.value]
+        return node
     
     @staticmethod
     def derive(node: tree.BiTree, variable_name: str):
@@ -174,7 +175,13 @@ class AdditionHandler(TokenHandler):
 
     @staticmethod
     def simplify(node: tree.BiTree):
-        raise NotImplementedError
+        node.lhs = node.lhs.value.handler.simplify(node.lhs)        
+        node.rhs = node.rhs.value.handler.simplify(node.rhs)
+        if node.lhs.value.value == 0:
+            return node.rhs
+        if node.rhs.value.value == 0:
+            return node.lhs
+        return node
     
     @staticmethod
     def derive(node: tree.BiTree, variable_name: str):
@@ -195,7 +202,11 @@ class SubtractionHandler(TokenHandler):
 
     @staticmethod
     def simplify(node: tree.BiTree):
-        raise NotImplementedError
+        node.lhs = node.lhs.value.handler.simplify(node.lhs)        
+        node.rhs = node.rhs.value.handler.simplify(node.rhs)
+        if node.rhs.value.value == 0:
+            return node.lhs
+        return node
     
     @staticmethod
     def derive(node: tree.BiTree, variable_name: str):
@@ -216,7 +227,20 @@ class MultiplicationHandler(TokenHandler):
 
     @staticmethod
     def simplify(node: tree.BiTree):
-        raise NotImplementedError
+        node.lhs = node.lhs.value.handler.simplify(node.lhs)
+        node.rhs = node.rhs.value.handler.simplify(node.rhs)
+        if node.lhs.value.value == 0 or node.rhs.value.value == 0:
+            new_value = default_token('NUMBER')
+            new_value.value = 0
+            new_value.column = node.value.column
+            new_value.line = node.value.line
+            return tree.BiTree(None, None, new_value)
+        
+        if node.rhs.value.value == 1:
+            return node.lhs
+        if node.lhs.value.value == 1:
+            return node.rhs
+        return node
     
     @staticmethod
     def derive(node: tree.BiTree, variable_name: str):
@@ -253,7 +277,18 @@ class DivisionHandler(TokenHandler):
 
     @staticmethod
     def simplify(node: tree.BiTree):
-        raise NotImplementedError
+        node.lhs = node.lhs.value.handler.simplify(node.lhs)
+        if node.lhs.value.value == 0:
+            new_value = default_token('NUMBER')
+            new_value.value = 0
+            new_value.column = node.value.column
+            new_value.line = node.value.line
+            return tree.BiTree(None, None, new_value)
+        
+        node.rhs = node.rhs.value.handler.simplify(node.rhs)
+        if node.rhs.value.value == 1:
+            return node.lhs
+        return node
     
     @staticmethod
     def derive(node: tree.BiTree, variable_name: str):
@@ -312,7 +347,24 @@ class ExponantiationHandler(TokenHandler):
 
     @staticmethod
     def simplify(node: tree.BiTree):
-        raise NotImplementedError
+        node.lhs = node.lhs.value.handler.simplify(node.lhs)
+        if node.lhs.value.value == 0:
+            new_value = default_token('NUMBER')
+            new_value.value = 0
+            new_value.column = node.value.column
+            new_value.line = node.value.line
+            return tree.BiTree(None, None, new_value)
+        
+        node.rhs = node.rhs.value.handler.simplify(node.rhs)
+        if node.rhs.value.value == 0:
+            new_value = default_token('NUMBER')
+            new_value.value = 1
+            new_value.column = node.value.column
+            new_value.line = node.value.line
+            return tree.BiTree(None, None, new_value)
+        if node.rhs.value.value == 1:
+            return node.lhs
+        return node
     
     @staticmethod
     def derive(node: tree.BiTree, variable_name: str):
@@ -393,7 +445,9 @@ class RightFunctionHandler(TokenHandler):
     
     @staticmethod
     def simplify(node: tree.BiTree):
-        raise NotImplementedError
+        # TODO
+        node.rhs = node.rhs.value.handler.simplify(node.rhs)
+        return node
     
     @staticmethod
     def derive(node: tree.BiTree, variable_name: str):
@@ -412,7 +466,21 @@ class MagnitudeCastHandler(TokenHandler):
     
     @staticmethod
     def simplify(node: tree.BiTree):
-        raise NotImplementedError
+        magnitude = node.value.value[-1]
+        node.lhs = node.lhs.value.handler.simplify(node.lhs)
+        if node.lhs.value.value == 0:
+            new_value = default_token('NUMBER')
+            new_value.value = 0
+            new_value.column = node.value.column
+            new_value.line = node.value.line
+            return tree.BiTree(None, None, new_value)
+        if isinstance(node.lhs.value.value, (int, float, complex)):
+            new_value = default_token('NUMBER')
+            new_value.value = node.lhs.value.value / KNOWN_MAGNITUDES[magnitude]
+            new_value.column = node.value.column
+            new_value.line = node.value.line
+            return tree.BiTree(None, None, new_value)
+        return node
     
     @staticmethod
     def derive(node: tree.BiTree, variable_name: str):

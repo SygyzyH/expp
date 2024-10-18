@@ -15,7 +15,10 @@ def assign(exp: tree.BiTree, *_, **assigments):
     return exp.value.handler.assign(exp, **assigments)
 
 def derive(exp: tree.BiTree, variable_name: str, *_, **__):
-    return exp.value.handler.derive(exp, variable_name)
+    return simplify(exp.value.handler.derive(exp, variable_name))
+
+def simplify(exp: tree.BiTree, *_, **__):
+    return exp.value.handler.simplify(exp)
 
 def solve(exp: tree.BiTree, variable: str, max_iter=MAX_SOLUTION_DEPTH, epsil=SOLUTION_EPSIL, tolerance=SOLUTION_TOLERANCE, **parameters):
     from syntax import default_token
