@@ -42,3 +42,4 @@ class StatmentConstructor:
     
     def consume_exp(self, exp: tree.BiTree):
         self._stack.append(exp)
+        return

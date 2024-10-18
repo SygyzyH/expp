@@ -422,6 +422,7 @@ BASE_TOKENS = [
     Token('END_STATEMENT', r';', None),
     Token('DIRECTIVE', r'\$' + r'|\$'.join(list(KNOWN_DIRECTIVES.keys())), None),
     Token('HISTORY', r'\$[0-9]+', None),
+    Token('RESULT_HISTORY', r'\$\$[0-9]+', None),
     Token('NUMBER', r'-?\d+(\.\d+)?j?[' + ''.join(list(KNOWN_MAGNITUDES.keys())) + r']?', NumberHandler),
     Token('EQUAL', r'=', None, priority=1), # NOTE: Priority requires to be treated as an operand by polish
     Token('ADD', r'\+', AdditionHandler, priority=2),

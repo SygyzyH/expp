@@ -22,14 +22,14 @@ def read_loop():
     print(__doc__)
     # Default directive
     expression_history = []
-    last_result = None
+    result_history = []
     
     while True:
         try:
             line = input(">>> ")
 
             directive = syntax.KNOWN_DIRECTIVES['assign']
-            assigments = {'_': last_result}
+            assigments = {'_': result_history[-1] if len(result_history) > 0 else None}
             parameters = []
         
             statment = statement.StatmentConstructor()
@@ -47,7 +47,13 @@ def read_loop():
                 # NOTE: The first token is not thrown away, it stays in the statement class state.
                 # The only way we complete an expression here is if the tokenizer returne 'END' as the first token,
                 # which can only happen if the statement is empty. In which case, we quit
-                exp = statment.consume_token(first_token)
+                if first_token.name == 'HISTORY':
+                    # Always returns None, as an expression cannot by itself complete a statement (only a END can)
+                    exp = statment.consume_exp(expression_history[first_token.value - 1])
+                elif first_token.name == 'RESULT_HISTORY':
+                    exp = statment.consume_exp(result_history[first_token.value - 1])
+                else:
+                    exp = statment.consume_token(first_token)
                 if exp is not None:
                     break
         
@@ -55,6 +61,8 @@ def read_loop():
                 if token.name == 'HISTORY':
                     # Always returns None, as an expression cannot by itself complete a statement (only a END can)
                     exp = statment.consume_exp(expression_history[token.value - 1])
+                elif token.name == 'RESULT_HISTORY':
+                    exp = statment.consume_exp(result_history[token.value - 1])
                 else:
                     exp = statment.consume_token(token)
                 if exp is not None:
@@ -67,14 +75,14 @@ def read_loop():
                         assigments[exp.lhs.value.value] = exp.rhs
                         print(f"assign {len(assigments) - 1}: {base.stringify(exp)}")
                     else:
-                        print(directive, exp, parameters, assigments)
                         result = directive(exp, *parameters, **assigments)
-                        print("result: ", end='')
                         if isinstance(result, tree.BiTree):
-                            print(base.stringify(result))
+                            result_history.append(result)
                         else:
-                            print(result)
-                        last_result = result
+                            new_node = syntax.default_token('NUMBER')
+                            new_node.value = result
+                            result_history.append(tree.BiTree(None, None, new_node))
+                        print(f"result {len(result_history) + 1}: {base.stringify(result_history[-1])}")
             
         except KeyboardInterrupt:
             logging.info('Quit')

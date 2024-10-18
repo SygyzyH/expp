@@ -23,6 +23,8 @@ def tokenize(string: str):
             value *= scalar
         elif kind == 'HISTORY':
             value = int(value[1:])
+        elif kind == 'RESULT_HISTORY':
+            value = int(value[2:])
         elif kind == 'NEWLINE':
             line_start = mo.end()
             line_num += 1
@@ -30,7 +32,7 @@ def tokenize(string: str):
         elif kind == 'SKIP':
             continue
         elif kind == 'MISMATCH':
-            raise SyntaxError(f'line: {line_num}, column: {column}: Mismatched symbol {value}')
+            raise SyntaxError(f'line: {line_num}, column: {column}: Mismatched symbol "{value}"')
         source_token = next(_ for _ in syntax.BASE_TOKENS if _ == kind)
         last_token = syntax.Token(
             source_token.name,
