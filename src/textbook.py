@@ -58,8 +58,11 @@ class TextContainer:
     def getbox(self, row, col, max_row, max_col):
         final = []
         for r in range(row, row + max_row):
-            if len(self._text) > r and len(self._text[r]) >= col:
-                final.append(self._text[r][col:min(col + max_col, len(self._text[r]))])
+            if len(self._text) > r:
+                if len(self._text[r]) >= col:
+                    final.append(self._text[r][col:min(col + max_col, len(self._text[r]))])
+                else:
+                    final.append("")
                 
         return final
     
