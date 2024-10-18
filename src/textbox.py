@@ -1,4 +1,5 @@
 import line_consumer
+import syntax_error
 
 import curses
 import logging
@@ -70,6 +71,8 @@ def _start(stdscr: curses.window):
     curses.noecho()
     curses.cbreak()
     curses.curs_set(2)
+    # Error colors
+    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_RED)
     rows, cols = stdscr.getmaxyx()
     stdscr.clear()
 
@@ -118,7 +121,6 @@ def _start(stdscr: curses.window):
             input_window.addstr(line)
         input_window.move(container.row + 1, container.col + 1)
         input_window.border()
-        input_window.noutrefresh()
 
         #stdscr.clear()
         output_window.move(0, 0)
@@ -131,11 +133,19 @@ def _start(stdscr: curses.window):
             try:
                 result = line_consumer.consume_line(line, expression_history, result_history)
                 if result is not None:
-                    print('outputting', result)
                     output_window.addnstr(result, ocols - 1)
+            except syntax_error.SyntaxError as e:
+                output_window.addnstr(str(e), ocols - 1)
+
+                last_input_cursor = input_window.getyx()
+                offending_character = input_window.inch(i + 1, e.col + 1)
+                input_window.addch(i + 1, e.col + 1, offending_character, curses.color_pair(1))
+                input_window.move(*last_input_cursor)
             except Exception as e:
                 output_window.addnstr(str(e), ocols - 1)
         output_window.border()
+
+        input_window.noutrefresh()
         output_window.noutrefresh()
         
         stdscr.move(*input_window.getyx())
