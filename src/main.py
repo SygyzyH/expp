@@ -1,5 +1,5 @@
 import line_consumer
-import textbox
+import textbook
 
 import argparse
 
@@ -60,7 +60,7 @@ def main():
     if not args.interactive:
         read_loop()
     else:
-        textbox.start()
+        textbook.start()
 
 
 if __name__ == "__main__":
