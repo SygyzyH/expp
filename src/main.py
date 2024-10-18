@@ -31,7 +31,7 @@ def read_loop():
         try:
             line = input(">>> ")
 
-            line_consumer.consume_line(line, expression_history, result_history)
+            line_consumer.consume_line(line, expression_history, result_history, True)
         except KeyboardInterrupt:
             logging.info('Quit')
             raise

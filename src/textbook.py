@@ -138,7 +138,7 @@ def _start(stdscr: curses.window):
         for line_number, line in enumerate(container.getlines()):
             output_window.move(i + 1, 1)
             try:
-                result = line_consumer.consume_line(line, expression_history, result_history)
+                result = line_consumer.consume_line(line, expression_history, result_history, False)
                 if result is not None:
                     output_window.addnstr(f"{len(result_history)} : {result}", -1)
                     if len(result) >= ocols - 1:

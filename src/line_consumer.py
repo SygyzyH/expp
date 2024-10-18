@@ -8,7 +8,7 @@ import tree
 import logging
 import inspect
 
-def consume_line(line: str, expression_history, result_history):
+def consume_line(line: str, expression_history, result_history, live_print: bool):
     directive = syntax.KNOWN_DIRECTIVES['assign']
     assigments = {'_': result_history[-1] if len(result_history) > 0 else None}
     parameters = []
@@ -27,9 +27,13 @@ def consume_line(line: str, expression_history, result_history):
         # which can only happen if the statement is empty. In which case, we quit
         # FIXME: Bad code repetition
         if first_token.name == 'EXP_HISTORY':
+            assert first_token.value > 0, syntax_error.SyntaxError(first_token.line, first_token.column, f'History is index 1 based. 0 is not valid')
+            assert first_token.value - 1 < len(expression_history), syntax_error.SyntaxError(first_token.line, first_token.column, f'Invalid result history idx {first_token.value}, max is {len(expression_history)}')
             # Always returns None, as an expression cannot by itself complete a statement (only a END can)
             exp = statment.consume_exp(expression_history[first_token.value - 1])
         elif first_token.name == 'RESULT_HISTORY':
+            assert first_token.value > 0, syntax_error.SyntaxError(first_token.line, first_token.column, f'History is index 1 based. 0 is not valid')
+            assert first_token.value - 1 < len(result_history), syntax_error.SyntaxError(first_token.line, first_token.column, f'Invalid result history idx {first_token.value}, max is {len(result_history)}')
             exp = statment.consume_exp(result_history[first_token.value - 1])
         else:
             exp = statment.consume_token(first_token)
@@ -46,7 +50,8 @@ def consume_line(line: str, expression_history, result_history):
             exp = statment.consume_token(token)
         if exp is not None:
             expression_history.append(exp)
-            print(f"{len(expression_history)}: {base.stringify(exp)}")
+            if live_print:
+                print(f"{len(expression_history)}: {base.stringify(exp)}")
             # Number of parameters directive has, that are positional and have no default, excluding the input expression.
             required_parameters = len(list(
                 filter(
@@ -56,10 +61,8 @@ def consume_line(line: str, expression_history, result_history):
             )) - 1
             if len(parameters) < required_parameters and exp.value.name == 'NAME' and exp.value.value != '_':
                 parameters.append(exp.value.value)
-                print(f"param {len(parameters)}: {base.stringify(exp)}")
             elif exp.value.name == 'EQUAL' and exp.lhs.value.name == 'NAME':
                 assigments[exp.lhs.value.value] = exp.rhs
-                print(f"assign {len(assigments) - 1}: {base.stringify(exp)}")
             else:
                 logging.debug(f'running {directive.__name__} on {exp}')
                 try:
@@ -72,6 +75,7 @@ def consume_line(line: str, expression_history, result_history):
                     new_node = syntax.default_token('NUMBER')
                     new_node.value = result
                     result_history.append(tree.BiTree(None, None, new_node))
-                print(f"result {len(result_history)}: {base.stringify(result_history[-1])}")
+                if live_print:
+                    print(f"result {len(result_history)}: {base.stringify(result_history[-1])}")
                 return base.stringify(result_history[-1])
     raise syntax_error.SyntaxError(0, 0, 'Failed to construct enough expressions to perform directive')
