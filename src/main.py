@@ -53,6 +53,7 @@ def read_loop():
                 # NOTE: The first token is not thrown away, it stays in the statement class state.
                 # The only way we complete an expression here is if the tokenizer returne 'END' as the first token,
                 # which can only happen if the statement is empty. In which case, we quit
+                # FIXME: Bad code repetition
                 if first_token.name == 'EXP_HISTORY':
                     # Always returns None, as an expression cannot by itself complete a statement (only a END can)
                     exp = statment.consume_exp(expression_history[first_token.value - 1])
