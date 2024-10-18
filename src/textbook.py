@@ -30,7 +30,11 @@ class TextContainer:
         self._text[self.row] = self._text[self.row][:self.col] + self._text[self.row][self.col + 1:]
     def delete_back_char(self):
         self._text[self.row] = self._text[self.row][:max(0, self.col - 1)] + self._text[self.row][self.col:]
-        self.move_left()
+        if self.col == 0:
+            self.move_up()
+            self.move_end()
+        else:
+            self.move_left()
 
     def move_right(self):
         self.col = min(len(self._text[self.row]), self.col + 1)
@@ -125,26 +129,34 @@ def _start(stdscr: curses.window):
         #stdscr.clear()
         output_window.move(0, 0)
         output_window.clear()
-        orows, ocols = output_window.getyx()
+        orows, ocols = output_window.getmaxyx()
         expression_history = []
         result_history = []
-        for i, line in enumerate(container.getlines()):
+        i = 0
+        for line_number, line in enumerate(container.getlines()):
             output_window.move(i + 1, 1)
             try:
                 result = line_consumer.consume_line(line, expression_history, result_history)
                 if result is not None:
-                    output_window.addnstr(result, ocols - 1)
+                    output_window.addnstr(f"{len(result_history)} : {result}", -1)
+                    if len(result) >= ocols - 1:
+                        i += 1
             except (syntax_error.SyntaxError, AssertionError) as e:
                 if isinstance(e, AssertionError):
                     e = e.args[0]
-                output_window.addnstr(str(e), ocols - 1)
+                output_window.addnstr(str(e), -1)
+                if len(str(e)) >= ocols - 1:
+                        i += 1
 
                 last_input_cursor = input_window.getyx()
-                offending_character = input_window.inch(i + 1, e.col + 1)
-                input_window.addch(i + 1, e.col + 1, offending_character, curses.color_pair(1))
+                offending_character = input_window.inch(line_number + 1, e.col + 1)
+                input_window.addch(line_number + 1, e.col + 1, offending_character, curses.color_pair(1))
                 input_window.move(*last_input_cursor)
             except Exception as e:
-                output_window.addnstr(f"{e.__class__.__name__}: {str(e)}", ocols - 1)
+                output_window.addnstr(f"{e.__class__.__name__}: {str(e)}", -1)
+                if len(f"{e.__class__.__name__}: {str(e)}") >= ocols - 1:
+                        i += 1
+            i += 1
         output_window.border()
 
         input_window.noutrefresh()
