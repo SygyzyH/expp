@@ -55,18 +55,11 @@ class TextContainer:
     def move_start(self):
         self.col = 0
     
-    def getbox(self, row, col, max_row, max_col, empty_char=" "):
-        # TODO: Optimize me!
-        final = [empty_char * max_col] * max_row
+    def getbox(self, row, col, max_row, max_col):
+        final = []
         for r in range(row, row + max_row):
-            nr = r - row
-            for c in range(col, col + max_col):
-                nc = c - col
-                try:
-                    char = self._text[r][c]
-                except:
-                    char = empty_char
-                final[nr] = final[nr][:nc] + char + final[nr][nc:]
+            if len(self._text) > r and len(self._text[r]) >= col:
+                final.append(self._text[r][col:min(col + max_col, len(self._text[r]))])
                 
         return final
     
