@@ -134,7 +134,9 @@ def _start(stdscr: curses.window):
                 result = line_consumer.consume_line(line, expression_history, result_history)
                 if result is not None:
                     output_window.addnstr(result, ocols - 1)
-            except syntax_error.SyntaxError as e:
+            except (syntax_error.SyntaxError, AssertionError) as e:
+                if isinstance(e, AssertionError):
+                    e = e.args[0]
                 output_window.addnstr(str(e), ocols - 1)
 
                 last_input_cursor = input_window.getyx()
@@ -142,7 +144,7 @@ def _start(stdscr: curses.window):
                 input_window.addch(i + 1, e.col + 1, offending_character, curses.color_pair(1))
                 input_window.move(*last_input_cursor)
             except Exception as e:
-                output_window.addnstr(str(e), ocols - 1)
+                output_window.addnstr(f"{e.__class__.__name__}: {str(e)}", ocols - 1)
         output_window.border()
 
         input_window.noutrefresh()
