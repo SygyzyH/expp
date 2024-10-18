@@ -21,7 +21,7 @@ def tokenize(string: str):
             else:
                 value = float(value) if '.' in value else int(value)
             value *= scalar
-        elif kind == 'HISTORY':
+        elif kind == 'EXP_HISTORY':
             value = int(value[1:])
         elif kind == 'RESULT_HISTORY':
             value = int(value[2:])
