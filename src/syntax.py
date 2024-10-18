@@ -83,6 +83,23 @@ class Token:
     def __repr__(self) -> str:
         return f"{self.name}(value={self.value.__repr__()}, ({self.line}, {self.column}), priority={self.priority})"
 
+class NoHandler(TokenHandler):
+    @staticmethod
+    def evaluate(node: tree.BiTree):
+        raise NotImplementedError
+
+    @staticmethod
+    def assign(node: tree.BiTree, **assigments):
+        raise NotImplementedError
+    
+    @staticmethod
+    def simplify(node: tree.BiTree):
+        raise NotImplementedError
+    
+    @staticmethod
+    def derive(node: tree.BiTree, variable_name: str):
+        raise NotImplementedError
+
 class NumberHandler(TokenHandler):
     @staticmethod
     def evaluate(node: tree.BiTree):
@@ -420,27 +437,27 @@ class MagnitudeCastHandler(TokenHandler):
         )
 
 BASE_TOKENS = [
-    Token('END_STATEMENT', r';', None),
-    Token('DIRECTIVE', r'\$' + r'|\$'.join(list(KNOWN_DIRECTIVES.keys())), None),
-    Token('EXP_HISTORY', r'\$[0-9]+', None),
-    Token('RESULT_HISTORY', r'\$\$[0-9]+', None),
+    Token('END_STATEMENT', r';', NoHandler),
+    Token('DIRECTIVE', r'\$' + r'|\$'.join(list(KNOWN_DIRECTIVES.keys())), NoHandler),
+    Token('EXP_HISTORY', r'\$[0-9]+', NoHandler),
+    Token('RESULT_HISTORY', r'\$\$[0-9]+', NoHandler),
     Token('NUMBER', r'-?\d+(\.\d+)?j?[' + ''.join(list(KNOWN_MAGNITUDES.keys())) + r']?', NumberHandler),
-    Token('EQUAL', r'=', None, priority=1), # NOTE: Priority requires to be treated as an operand by polish
+    Token('EQUAL', r'=', NoHandler, priority=1), # NOTE: Priority requires to be treated as an operand by polish
     Token('ADD', r'\+', AdditionHandler, priority=2),
     Token('SUB', r'-', SubtractionHandler, priority=2),
     Token('POW', r'\^|\*\*', ExponantiationHandler, priority=4),
     Token('MUL', r'\*|\.', MultiplicationHandler, priority=3),
     Token('DIV', r'/', DivisionHandler, priority=3),
-    Token('O_PAREN', r'\(', None),
-    Token('C_PAREN', r'\)', None),
-    Token('PAREN_BACK', r'\]', None),
+    Token('O_PAREN', r'\(', NoHandler),
+    Token('C_PAREN', r'\)', NoHandler),
+    Token('PAREN_BACK', r'\]', NoHandler),
     Token('FUNC_L', r'as [' + ''.join(list(KNOWN_MAGNITUDES.keys())) + r']', MagnitudeCastHandler),
     Token('FUNC_R', r'|'.join(list(KNOWN_FUNCTIONS)), RightFunctionHandler, priority=5),
     Token('CONST', r'|'.join(list(KNOWN_CONSTANTS)), ConstHandler),
     Token('NAME', r'[a-zA-Z_]+', NamedVariableHandler),
-    Token('NEWLINE', r'\n', None),
-    Token('SKIP', r'[ \t]+', None),
-    Token('MISMATCH', r'.', None),
+    Token('NEWLINE', r'\n', NoHandler),
+    Token('SKIP', r'[ \t]+', NoHandler),
+    Token('MISMATCH', r'.', NoHandler),
 ]
 
 def default_token(name: str):
