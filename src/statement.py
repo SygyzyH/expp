@@ -17,7 +17,7 @@ class StatmentConstructor:
                 if len(self._stack) == 0:
                     # Empty expression
                     return tree.BiTree(None, None, None)
-                assert len(self._stack) == 1, 'Disjointed expression'
+                assert len(self._stack) == 1, f'line: {polish_token.line}, column: {polish_token.column}: Disjointed expression'
                 # Statement was generated
                 return self._stack.pop()
             if polish_token.name == 'FUNC_R':
