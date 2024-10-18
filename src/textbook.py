@@ -31,7 +31,8 @@ class TextContainer:
     def delete_back_char(self):
         self._text[self.row] = self._text[self.row][:max(0, self.col - 1)] + self._text[self.row][self.col:]
         if self.col == 0:
-            self._text.pop(self.row)
+            if self.row > 0:
+                self._text.pop(self.row)
             self.move_up()
             self.move_end()
         else:
