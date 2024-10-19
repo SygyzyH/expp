@@ -56,7 +56,17 @@ def solve(exp: tree.BiTree, variable: str, max_iter=MAX_SOLUTION_DEPTH, epsil=SO
     return x0
 
 def stringify(exp: tree.BiTree) -> str:
-    return (stringify(exp.lhs) if exp.lhs is not None else '') + str(exp.value.value) + (stringify(exp.rhs) if exp.rhs is not None else '')
+    lhs = rhs = ''
+    if exp.lhs is not None:
+        lhs = f'{stringify(exp.lhs)}'
+        if len(lhs) > 2:
+            lhs = f'({lhs})'
+    if exp.rhs is not None:
+        rhs = f'{stringify(exp.rhs)}'
+        if len(rhs) > 2:
+            rhs = f'({rhs})' 
+
+    return lhs + str(exp.value.value) + rhs
 
 def nevaluate(exp: tree.BiTree, *_, **__) -> tree.BiTree:
     return exp
