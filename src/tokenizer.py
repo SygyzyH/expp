@@ -31,6 +31,9 @@ def tokenize(string: str):
             line_start = mo.end()
             line_num += 1
             continue
+        elif kind == 'COMMENT':
+            line_num += value.count('\n')
+            continue
         elif kind == 'SKIP':
             continue
         elif kind == 'MISMATCH':
