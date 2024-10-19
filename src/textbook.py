@@ -144,7 +144,7 @@ def _start(stdscr: curses.window):
             output_window.move(i + 1, 1)
             try:
                 results_count = 0
-                for result in line_consumer.consume_line(line, expression_history, result_history, variables, False):
+                for result in line_consumer.consume_line('\n' * line_number + line, expression_history, result_history, variables, False):
                     if result is not None:
                         results_count += 1
                         output_window.addnstr(f"{len(result_history)} : {result}", -1)
@@ -162,8 +162,8 @@ def _start(stdscr: curses.window):
                     if view[1] > 0:
                         e.col %= view[1]
                     last_input_cursor = input_window.getyx()
-                    offending_character = input_window.inch(line_number + 1, e.col + 1)
-                    input_window.addch(line_number + 1, e.col + 1, offending_character, curses.color_pair(1))
+                    offending_character = input_window.inch(e.line, e.col + 1)
+                    input_window.addch(e.line, e.col + 1, offending_character, curses.color_pair(1))
                     input_window.move(*last_input_cursor)
             except Exception as e:
                 logging.debug(format_exc())
