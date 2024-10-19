@@ -124,8 +124,8 @@ def _start(stdscr: curses.window):
         input_window.clear()
         irows, icols = input_window.getmaxyx()
         # Need to account for borders, so actual size is smaller
-        view = irows * (container.row // irows), (icols - 2) * (container.col // (icols - 2))
-        for i, line in enumerate(container.getbox(*view, irows - 2, icols - 1)):
+        view = (irows - 2) * (container.row // (irows - 2)), (icols - 2) * (container.col // (icols - 2))
+        for i, line in enumerate(container.getbox(*view, irows - 3, icols - 1)):
             input_window.move(i + 1, 1)
             input_window.addstr(line)
         input_window.move(container.row % (irows - 2) + 1, container.col % (icols - 2) + 1)
@@ -140,11 +140,11 @@ def _start(stdscr: curses.window):
         result_history = []
         variables = {}
         i = 0
-        for line_number, line in enumerate(container.getlines()):
+        for line_number, line in enumerate(container.getlines()[view[0]:view[0] + irows - 2]):
             output_window.move(i + 1, 1)
             try:
                 results_count = 0
-                for result in line_consumer.consume_line('\n' * line_number + line, expression_history, result_history, variables, False):
+                for result in line_consumer.consume_line('\n' * (line_number + view[0]) + line, expression_history, result_history, variables, False):
                     if result is not None:
                         results_count += 1
                         output_window.addnstr(f"{len(result_history)} : {result}", -1)
@@ -162,8 +162,8 @@ def _start(stdscr: curses.window):
                     if view[1] > 0:
                         e.col %= view[1]
                     last_input_cursor = input_window.getyx()
-                    offending_character = input_window.inch(e.line, e.col + 1)
-                    input_window.addch(e.line, e.col + 1, offending_character, curses.color_pair(1))
+                    offending_character = input_window.inch(e.line - view[0], e.col + 1)
+                    input_window.addch(e.line - view[0], e.col + 1, offending_character, curses.color_pair(1))
                     input_window.move(*last_input_cursor)
             except Exception as e:
                 logging.debug(format_exc())
