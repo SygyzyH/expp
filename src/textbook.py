@@ -34,6 +34,8 @@ class TextContainer:
         if self.col == 0:
             if self.row > 0:
                 self._text.pop(self.row)
+            else:
+                self._text[self.row] = ""
             self.move_up()
             self.move_end()
         else:
@@ -132,25 +134,29 @@ def _start(stdscr: curses.window):
         #stdscr.clear()
         output_window.move(0, 0)
         output_window.clear()
+        output_window.border()
         orows, ocols = output_window.getmaxyx()
         expression_history = []
         result_history = []
+        variables = {}
         i = 0
         for line_number, line in enumerate(container.getlines()):
             output_window.move(i + 1, 1)
             try:
-                result = line_consumer.consume_line(line, expression_history, result_history, False)
-                if result is not None:
-                    output_window.addnstr(f"{len(result_history)} : {result}", -1)
-                    if len(result) >= ocols - 1:
-                        i += 1
+                results_count = 0
+                for result in line_consumer.consume_line(line, expression_history, result_history, variables, False):
+                    if result is not None:
+                        results_count += 1
+                        output_window.addnstr(f"{len(result_history)} : {result}", -1)
+                        i += len(result) // (ocols - 1)
+                        output_window.move(i + results_count + 1, 1)
+                i += max(0, results_count - 1)
             except (syntax_error.SyntaxError, AssertionError) as e:
                 logging.debug(format_exc())
                 if isinstance(e, AssertionError):
                     e = e.args[0]
                 output_window.addnstr(str(e), -1)
-                if len(str(e)) >= ocols - 1:
-                        i += 1
+                i += len(str(e)) // (ocols - 1)
 
                 if e.col + 1 >= view[1] and e.col + 1 < view[1] + icols:
                     if view[1] > 0:
@@ -162,10 +168,8 @@ def _start(stdscr: curses.window):
             except Exception as e:
                 logging.debug(format_exc())
                 output_window.addnstr(f"{e.__class__.__name__}: {str(e)}", -1)
-                if len(f"{e.__class__.__name__}: {str(e)}") >= ocols - 1:
-                        i += 1
+                i += len(f"{e.__class__.__name__}: {str(e)}") // (ocols -1)
             i += 1
-        output_window.border()
 
         input_window.noutrefresh()
         output_window.noutrefresh()

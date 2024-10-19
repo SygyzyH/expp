@@ -8,11 +8,12 @@ import tree
 
 KNOWN_DIRECTIVES = {
     'eval': base.evaluate,
+    'neval': base.nevaluate,
     'assign': base.assign,
     'derive': base.derive,
     'simplify': base.simplify,
     'solve': base.solve,
-    'pass': base.passthrough,
+    'set': base.set,
 }
 
 KNOWN_MAGNITUDES = {

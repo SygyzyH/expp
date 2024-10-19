@@ -1,4 +1,4 @@
-import tokenizer
+import syntax_error
 import tree
 
 import logging
@@ -58,5 +58,8 @@ def solve(exp: tree.BiTree, variable: str, max_iter=MAX_SOLUTION_DEPTH, epsil=SO
 def stringify(exp: tree.BiTree) -> str:
     return (stringify(exp.lhs) if exp.lhs is not None else '') + str(exp.value.value) + (stringify(exp.rhs) if exp.rhs is not None else '')
 
-def passthrough(exp: tree.BiTree, *_, **__) -> tree.BiTree:
+def nevaluate(exp: tree.BiTree, *_, **__) -> tree.BiTree:
     return exp
+
+def set(exp: tree.BiTree, *_, **__):
+    raise syntax_error.SyntaxError(exp.value.line, exp.value.line, 'Set directive executed by base class')

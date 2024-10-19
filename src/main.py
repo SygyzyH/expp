@@ -26,12 +26,14 @@ def read_loop():
     # Default directive
     expression_history = []
     result_history = []
+    variables = {}
     
     while True:
         try:
             line = input(">>> ")
 
-            line_consumer.consume_line(line, expression_history, result_history, True)
+            for result in line_consumer.consume_line(line, expression_history, result_history, variables, True):
+                pass
         except KeyboardInterrupt:
             logging.info('Quit')
             raise

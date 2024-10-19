@@ -17,7 +17,7 @@ class StatmentConstructor:
                 logging.debug(f"Finished statement {self._stack}")
                 if len(self._stack) == 0:
                     # Empty expression
-                    return tree.BiTree(None, None, None)
+                    return
                 assert len(self._stack) == 1, syntax_error.SyntaxError(polish_token.line, polish_token.column, 'Disjointed expression')
                 # Statement was generated
                 return self._stack.pop()
