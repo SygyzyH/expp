@@ -66,10 +66,7 @@ def consume_line(line: str, expression_history, result_history, variables: dict,
                 continue
             
             logging.debug(f'running {directive.__name__} on {exp}')
-            try:
-                result = directive(exp, *parameters, **variables)
-            except Exception as e:
-                raise syntax_error.SyntaxError(token.line, token.column, f'Directive "{directive.__name__}" failed: {e.__class__.__name__}: {str(e)}')
+            result = directive(exp, *parameters, **variables)
             
             if isinstance(result, tree.BiTree):
                 result_history.append(result)

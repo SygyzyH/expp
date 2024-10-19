@@ -5,6 +5,7 @@ import copy
 
 import base
 import tree
+import syntax_error
 
 KNOWN_DIRECTIVES = {
     'eval': base.evaluate,
@@ -149,6 +150,7 @@ class NamedVariableHandler(TokenHandler):
 
     @staticmethod
     def assign(node: tree.BiTree, **assigments):
+        assert node.value.value in assigments.keys(), syntax_error.SyntaxError(node.value.line, node.value.column, f'No value assigned for {node.value.value}')
         return base.assign(assigments[node.value.value], **assigments)
     
     @staticmethod
