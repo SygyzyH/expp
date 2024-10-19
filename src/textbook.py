@@ -3,6 +3,7 @@ import syntax_error
 
 import curses
 import logging
+from traceback import format_exc
 
 def start():
     curses.wrapper(_start)
@@ -144,6 +145,7 @@ def _start(stdscr: curses.window):
                     if len(result) >= ocols - 1:
                         i += 1
             except (syntax_error.SyntaxError, AssertionError) as e:
+                logging.debug(format_exc())
                 if isinstance(e, AssertionError):
                     e = e.args[0]
                 output_window.addnstr(str(e), -1)
@@ -158,6 +160,7 @@ def _start(stdscr: curses.window):
                     input_window.addch(line_number + 1, e.col + 1, offending_character, curses.color_pair(1))
                     input_window.move(*last_input_cursor)
             except Exception as e:
+                logging.debug(format_exc())
                 output_window.addnstr(f"{e.__class__.__name__}: {str(e)}", -1)
                 if len(f"{e.__class__.__name__}: {str(e)}") >= ocols - 1:
                         i += 1
