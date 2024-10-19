@@ -36,6 +36,7 @@ def solve(exp: tree.BiTree, variable: str, max_iter=MAX_SOLUTION_DEPTH, epsil=SO
     
     for _ in range(max_iter):
         new_token.value = x0
+        logging.debug(f'Trying {x0}')
         y = assign(exp, **{variable: tree.BiTree(None, None, new_token)}, **parameters)
         y_prime = assign(prime, **{variable: tree.BiTree(None, None, new_token)}, **parameters)
     
@@ -57,21 +58,5 @@ def solve(exp: tree.BiTree, variable: str, max_iter=MAX_SOLUTION_DEPTH, epsil=SO
 def stringify(exp: tree.BiTree) -> str:
     return (stringify(exp.lhs) if exp.lhs is not None else '') + str(exp.value.value) + (stringify(exp.rhs) if exp.rhs is not None else '')
 
-if __name__ == "__main__":
-    import logging
-    import sys
-    logging.basicConfig(
-        stream=sys.stderr,
-        level=logging.DEBUG,
-        format="[%(levelname)s:%(funcName)s:%(lineno)s] %(message)s"
-    )
-    import statement
-
-    statment = statement.StatmentConstructor()
-    for token in tokenizer.tokenize("1 + 1 - 1 + 1 + x * x"):
-        exp = statment.consume_token(token)
-        if exp is not None:
-            #print(exp)
-            #print(derive(exp, 'x'))
-            print(stringify(derive(exp, 'x')))
-            #print(solve(exp, 'x'))
+def passthrough(exp: tree.BiTree, *_, **__) -> tree.BiTree:
+    return exp

@@ -12,6 +12,7 @@ KNOWN_DIRECTIVES = {
     'derive': base.derive,
     'simplify': base.simplify,
     'solve': base.solve,
+    'pass': base.passthrough,
 }
 
 KNOWN_MAGNITUDES = {
@@ -522,7 +523,7 @@ BASE_TOKENS = [
     Token('FUNC_L', r'as [' + ''.join(list(KNOWN_MAGNITUDES.keys())) + r']', MagnitudeCastHandler),
     Token('FUNC_R', r'|'.join(list(KNOWN_FUNCTIONS)), RightFunctionHandler, priority=5),
     Token('CONST', r'|'.join(list(KNOWN_CONSTANTS)), ConstHandler),
-    Token('NAME', r'[a-zA-Z_]+', NamedVariableHandler),
+    Token('NAME', r'[a-zA-Z_]+[0-9]*', NamedVariableHandler),
     Token('NEWLINE', r'\n', NoHandler),
     Token('SKIP', r'[ \t]+', NoHandler),
     Token('MISMATCH', r'.', NoHandler),
