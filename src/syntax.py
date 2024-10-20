@@ -42,9 +42,134 @@ KNOWN_FUNCTIONS = {
     'atan': math.atan,
     'ln': math.log,
     'log2': math.log2,
-    'log': math.log10,
+    'log10': math.log10,
     'exp': math.exp,
     'sqrt': math.sqrt,
+}
+def sin_derivative(node: tree.BiTree, variable_name: str):
+    new_value = default_token('FUNC_R')
+    new_value.value = 'cos'
+    new_value.column = node.value.column
+    new_value.line = node.value.line
+
+    rhs = node.rhs.value.handler.derive(node.rhs, variable_name)
+
+    return tree.BiTree(None, rhs, new_value)
+
+def cos_derivative(node: tree.BiTree, variable_name: str):
+    new_value = default_token('NUMBER')
+    new_value.value = -1
+    new_value.column = node.value.column
+    new_value.line = node.value.line
+
+    minus_one = tree.BiTree(None, None, new_value)
+
+    new_value = default_token('FUNC_R')
+    new_value.value = 'sin'
+    new_value.column = node.value.column
+    new_value.line = node.value.line
+
+    cos = tree.BiTree(None, node.rhs, new_value)
+
+    new_value = default_token('MUL')
+    new_value.value = '*'
+    new_value.column = node.value.column
+    new_value.line = node.value.line
+
+    return tree.BiTree(minus_one, cos, new_value)
+
+def tan_derivative(node: tree.BiTree, variable_name: str):
+    new_value = default_token('FUNC_R')
+    new_value.value = 'cos'
+    new_value.column = node.value.column
+    new_value.line = node.value.line
+
+    cos = tree.BiTree(None, node.rhs, new_value)
+
+    new_value = default_token('NUMBER')
+    new_value.value = 2
+    new_value.column = node.value.column
+    new_value.line = node.value.line
+
+    immediate = tree.BiTree(None, None, new_value)
+
+    new_value = default_token('POW')
+    new_value.value = '^'
+    new_value.column = node.value.column
+    new_value.line = node.value.line
+
+    sec = tree.BiTree(cos, immediate, new_value)
+
+    rhs = node.rhs.value.handler.derive(node.rhs, variable_name)
+
+    new_value = default_token('MUL')
+    new_value.value = '*'
+    new_value.column = node.value.column
+    new_value.line = node.value.line
+
+    return tree.BiTree(rhs, sec, new_value)
+
+def ln_derivative(node: tree.BiTree, variable_name: str):
+    new_value = default_token('DIV')
+    new_value.value = '/'
+    new_value.column = node.value.column
+    new_value.line = node.value.line
+
+    return tree.BiTree(
+        node.rhs.value.handler.derive(node.rhs, variable_name),
+        node.rhs,
+        new_value
+    )
+
+def exp_derivative(node: tree.BiTree, variable_name: str):
+    new_value = default_token('CONST')
+    new_value.value = '\\e'
+    new_value.column = node.value.column
+    new_value.line = node.value.line
+
+    const_e = tree.BiTree(None, None, new_value)
+
+    new_value = default_token('POW')
+    new_value.value = '^'
+    new_value.column = node.value.column
+    new_value.line = node.value.line
+
+    expanded_exp = tree.BiTree(
+        const_e,
+        node.rhs,
+        new_value
+    )
+
+    return expanded_exp.value.handler.derive(expanded_exp, variable_name)
+
+def square_root_derivative(node: tree.BiTree, variable_name: str):
+    new_value = default_token('NUMBER')
+    new_value.value = 0.5
+    new_value.column = node.value.column
+    new_value.line = node.value.line
+
+    immediate = tree.BiTree(None, None, new_value)
+
+    new_value = default_token('POW')
+    new_value.value = '^'
+    new_value.column = node.value.column
+    new_value.line = node.value.line
+
+    expanded_exp = tree.BiTree(
+        node.rhs,
+        immediate,
+        new_value
+    )
+
+    return expanded_exp.value.handler.derive(expanded_exp, variable_name)
+
+KNOWN_FUNCTION_DERIVATIVES = {
+    'sin': sin_derivative,
+    'cos': cos_derivative,
+    'tan': tan_derivative,
+    'ln': ln_derivative,
+    'exp': exp_derivative,
+    'sqrt': square_root_derivative,
 }
 
 class TokenHandler(ABC):
@@ -328,16 +453,21 @@ class DivisionHandler(TokenHandler):
         immediat = tree.BiTree(None, None, new_value)
 
         new_value = default_token('POW')
-        new_value.value = 2
+        new_value.value = '^'
         new_value.column = node.value.column
         new_value.line = node.value.line
 
-        divisor = tree.BiTree(node.lhs, immediat, new_value)
+        divisor = tree.BiTree(node.rhs, immediat, new_value)
+
+        new_value = default_token('DIV')
+        new_value.value = '/'
+        new_value.column = node.value.column
+        new_value.line = node.value.line
 
         return tree.BiTree(
-            divisor,
             divident,
-            node.value
+            divisor,
+            new_value
         )
 
 class ExponantiationHandler(TokenHandler):
@@ -455,7 +585,8 @@ class RightFunctionHandler(TokenHandler):
     
     @staticmethod
     def derive(node: tree.BiTree, variable_name: str):
-        raise NotImplementedError
+        func = KNOWN_FUNCTION_DERIVATIVES[node.value.value]
+        return func(node, variable_name)
 
 class MagnitudeCastHandler(TokenHandler):
     @staticmethod
