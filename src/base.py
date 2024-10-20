@@ -14,13 +14,13 @@ def evaluate(exp: tree.BiTree, *_, **__):
 def assign(exp: tree.BiTree, *_, **assigments):
     return exp.value.handler.assign(exp, **assigments)
 
-def derive(exp: tree.BiTree, variable_name: str, *_, **__):
-    return simplify(exp.value.handler.derive(exp, variable_name))
+def derive(exp: tree.BiTree, variable_name: str, *_, **assigments):
+    return simplify(exp.value.handler.derive(exp, variable_name, **assigments))
 
 def simplify(exp: tree.BiTree, *_, **__):
     return exp.value.handler.simplify(exp)
 
-def solve(exp: tree.BiTree, variable: str, max_iter=MAX_SOLUTION_DEPTH, epsil=SOLUTION_EPSIL, tolerance=SOLUTION_TOLERANCE, **parameters):
+def solve(exp: tree.BiTree, variable: str, max_iter=MAX_SOLUTION_DEPTH, epsil=SOLUTION_EPSIL, tolerance=SOLUTION_TOLERANCE, **assigments):
     from syntax import default_token
     if exp.value.name == 'EQUAL':
         new_token = default_token('SUB')
@@ -31,14 +31,15 @@ def solve(exp: tree.BiTree, variable: str, max_iter=MAX_SOLUTION_DEPTH, epsil=SO
         exp.value = new_token
 
     x0 = 1.0
-    prime = derive(exp, variable)
+    prime = derive(exp, variable, **assigments)
     new_token = default_token('NUMBER')
     
     for _ in range(max_iter):
         new_token.value = x0
         logging.debug(f'Trying {x0}')
-        y = assign(exp, **{variable: tree.BiTree(None, None, new_token)}, **parameters)
-        y_prime = assign(prime, **{variable: tree.BiTree(None, None, new_token)}, **parameters)
+        y = assign(exp, **{variable: tree.BiTree(None, None, new_token)}, **assigments)
+        y_prime = assign(prime, **{variable: tree.BiTree(None, None, new_token)}, **assigments)
+        logging.debug(f'{y}, {y_prime}')
     
         if abs(y_prime) < epsil:
             logging.debug(f'Found approximate solution, stopping early')

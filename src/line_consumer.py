@@ -70,7 +70,7 @@ def consume_line(line: str, expression_history, result_history, variables: dict,
                 yield base.stringify(exp)
                 continue
             
-            logging.debug(f'running {directive.__name__} on {exp}')
+            logging.debug(f'running {directive.__name__} on {exp}, params {parameters}, vars {variables}')
             result = directive(exp, *parameters, **variables)
             
             if isinstance(result, tree.BiTree):

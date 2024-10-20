@@ -46,17 +46,17 @@ KNOWN_FUNCTIONS = {
     'exp': math.exp,
     'sqrt': math.sqrt,
 }
-def sin_derivative(node: tree.BiTree, variable_name: str):
+def sin_derivative(node: tree.BiTree, variable_name: str, **assigments):
     new_value = default_token('R_FUNC')
     new_value.value = 'cos'
     new_value.column = node.value.column
     new_value.line = node.value.line
 
-    rhs = node.rhs.value.handler.derive(node.rhs, variable_name)
+    rhs = node.rhs.value.handler.derive(node.rhs, variable_name, **assigments)
 
     return tree.BiTree(None, rhs, new_value)
 
-def cos_derivative(node: tree.BiTree, variable_name: str):
+def cos_derivative(node: tree.BiTree, variable_name: str, **assigments):
     new_value = default_token('NUMBER')
     new_value.value = -1
     new_value.column = node.value.column
@@ -78,7 +78,7 @@ def cos_derivative(node: tree.BiTree, variable_name: str):
 
     return tree.BiTree(minus_one, cos, new_value)
 
-def tan_derivative(node: tree.BiTree, variable_name: str):
+def tan_derivative(node: tree.BiTree, variable_name: str, **assigments):
     new_value = default_token('R_FUNC')
     new_value.value = 'cos'
     new_value.column = node.value.column
@@ -100,7 +100,7 @@ def tan_derivative(node: tree.BiTree, variable_name: str):
 
     sec = tree.BiTree(cos, immediate, new_value)
 
-    rhs = node.rhs.value.handler.derive(node.rhs, variable_name)
+    rhs = node.rhs.value.handler.derive(node.rhs, variable_name, **assigments)
 
     new_value = default_token('MUL')
     new_value.value = '*'
@@ -109,19 +109,19 @@ def tan_derivative(node: tree.BiTree, variable_name: str):
 
     return tree.BiTree(rhs, sec, new_value)
 
-def ln_derivative(node: tree.BiTree, variable_name: str):
+def ln_derivative(node: tree.BiTree, variable_name: str, **assigments):
     new_value = default_token('DIV')
     new_value.value = '/'
     new_value.column = node.value.column
     new_value.line = node.value.line
 
     return tree.BiTree(
-        node.rhs.value.handler.derive(node.rhs, variable_name),
+        node.rhs.value.handler.derive(node.rhs, variable_name, **assigments),
         node.rhs,
         new_value
     )
 
-def exp_derivative(node: tree.BiTree, variable_name: str):
+def exp_derivative(node: tree.BiTree, variable_name: str, **assigments):
     new_value = default_token('CONST')
     new_value.value = '\\e'
     new_value.column = node.value.column
@@ -140,9 +140,9 @@ def exp_derivative(node: tree.BiTree, variable_name: str):
         new_value
     )
 
-    return expanded_exp.value.handler.derive(expanded_exp, variable_name)
+    return expanded_exp.value.handler.derive(expanded_exp, variable_name, **assigments)
 
-def square_root_derivative(node: tree.BiTree, variable_name: str):
+def square_root_derivative(node: tree.BiTree, variable_name: str, **assigments):
     new_value = default_token('NUMBER')
     new_value.value = 0.5
     new_value.column = node.value.column
@@ -161,7 +161,7 @@ def square_root_derivative(node: tree.BiTree, variable_name: str):
         new_value
     )
 
-    return expanded_exp.value.handler.derive(expanded_exp, variable_name)
+    return expanded_exp.value.handler.derive(expanded_exp, variable_name, **assigments)
 
 KNOWN_FUNCTION_DERIVATIVES = {
     'sin': sin_derivative,
@@ -190,7 +190,7 @@ class TokenHandler(ABC):
 
     @staticmethod
     @abstractmethod
-    def derive(node: tree.BiTree, variable_name: str):
+    def derive(node: tree.BiTree, variable_name: str, **assigments):
         pass
 
 @dataclass
@@ -202,7 +202,7 @@ class Token:
     value: str = None
     line: int = None
     column: int = None
-    
+
     def __eq__(self, value: object) -> bool:
         return self.name == value or (hasattr(value, "name") and value.name == self.name)
 
@@ -226,7 +226,7 @@ class NoHandler(TokenHandler):
         raise NotImplementedError
     
     @staticmethod
-    def derive(node: tree.BiTree, variable_name: str):
+    def derive(node: tree.BiTree, variable_name: str, **_):
         raise NotImplementedError
 
 class NumberHandler(TokenHandler):
@@ -243,7 +243,7 @@ class NumberHandler(TokenHandler):
         return node
     
     @staticmethod
-    def derive(node: tree.BiTree, variable_name: str):
+    def derive(node: tree.BiTree, variable_name: str, **_):
         new_node_value = copy.copy(node.value)
         new_node_value.value = 0
         return tree.BiTree(None, None, new_node_value)
@@ -262,7 +262,7 @@ class ConstHandler(TokenHandler):
         return node
     
     @staticmethod
-    def derive(node: tree.BiTree, variable_name: str):
+    def derive(node: tree.BiTree, variable_name: str, **_):
         new_node_value = copy.copy(node.value)
         new_node_value.value = 0
         return tree.BiTree(None, None, new_node_value)
@@ -283,9 +283,12 @@ class NamedVariableHandler(TokenHandler):
         return node
     
     @staticmethod
-    def derive(node: tree.BiTree, variable_name: str):
+    def derive(node: tree.BiTree, variable_name: str, **assigments):
         new_number = 0
-        if node.value.value == variable_name:
+        if node.value.value in assigments:
+            #raise EncodingWarning
+            return assigments[node.value.value].value.handler.derive(assigments[node.value.value], variable_name, **assigments)
+        elif node.value.value == variable_name:
             new_number = 1
         new_value = default_token('NUMBER')
         new_value.value = new_number
@@ -313,10 +316,10 @@ class AdditionHandler(TokenHandler):
         return node
     
     @staticmethod
-    def derive(node: tree.BiTree, variable_name: str):
+    def derive(node: tree.BiTree, variable_name: str, **assigments):
         return tree.BiTree(
-            node.lhs.value.handler.derive(node.lhs, variable_name),
-            node.rhs.value.handler.derive(node.rhs, variable_name),
+            node.lhs.value.handler.derive(node.lhs, variable_name, **assigments),
+            node.rhs.value.handler.derive(node.rhs, variable_name, **assigments),
             node.value
         )
 
@@ -338,10 +341,10 @@ class SubtractionHandler(TokenHandler):
         return node
     
     @staticmethod
-    def derive(node: tree.BiTree, variable_name: str):
+    def derive(node: tree.BiTree, variable_name: str, **assigments):
         return tree.BiTree(
-            node.lhs.value.handler.derive(node.lhs, variable_name),
-            node.rhs.value.handler.derive(node.rhs, variable_name),
+            node.lhs.value.handler.derive(node.lhs, variable_name, **assigments),
+            node.rhs.value.handler.derive(node.rhs, variable_name, **assigments),
             node.value
         )
 
@@ -372,14 +375,14 @@ class MultiplicationHandler(TokenHandler):
         return node
     
     @staticmethod
-    def derive(node: tree.BiTree, variable_name: str):
+    def derive(node: tree.BiTree, variable_name: str, **assigments):
         lhs = tree.BiTree(
-            node.lhs.value.handler.derive(node.lhs, variable_name),
+            node.lhs.value.handler.derive(node.lhs, variable_name, **assigments),
             node.rhs,
             node.value
         )
         rhs = tree.BiTree(
-            node.rhs.value.handler.derive(node.rhs, variable_name),
+            node.rhs.value.handler.derive(node.rhs, variable_name, **assigments),
             node.lhs,
             node.value
         )
@@ -420,21 +423,21 @@ class DivisionHandler(TokenHandler):
         return node
     
     @staticmethod
-    def derive(node: tree.BiTree, variable_name: str):
+    def derive(node: tree.BiTree, variable_name: str, **assigments):
         new_value = default_token('MUL')
         new_value.value = '*'
         new_value.column = node.value.column
         new_value.line = node.value.line
 
         lhs = tree.BiTree(
-            node.lhs.value.handler.derive(node.lhs, variable_name),
+            node.lhs.value.handler.derive(node.lhs, variable_name, **assigments),
             node.rhs,
             new_value
         )
 
         rhs = tree.BiTree(
             node.lhs,
-            node.rhs.value.handler.derive(node.rhs, variable_name),
+            node.rhs.value.handler.derive(node.rhs, variable_name, **assigments),
             new_value
         )
 
@@ -501,9 +504,9 @@ class ExponantiationHandler(TokenHandler):
         return node
     
     @staticmethod
-    def derive(node: tree.BiTree, variable_name: str):
-        lhs = node.lhs.value.handler.derive(node.lhs, variable_name)
-        rhs = node.rhs.value.handler.derive(node.rhs, variable_name)
+    def derive(node: tree.BiTree, variable_name: str, **assigments):
+        lhs = node.lhs.value.handler.derive(node.lhs, variable_name, **assigments)
+        rhs = node.rhs.value.handler.derive(node.rhs, variable_name, **assigments)
 
         new_value = default_token('R_FUNC')
         new_value.value = 'ln'
@@ -584,7 +587,7 @@ class RightFunctionHandler(TokenHandler):
         return node
     
     @staticmethod
-    def derive(node: tree.BiTree, variable_name: str):
+    def derive(node: tree.BiTree, variable_name: str, **_):
         func = KNOWN_FUNCTION_DERIVATIVES[node.value.value]
         return func(node, variable_name)
 
@@ -618,7 +621,7 @@ class MagnitudeCastHandler(TokenHandler):
         return node
     
     @staticmethod
-    def derive(node: tree.BiTree, variable_name: str):
+    def derive(node: tree.BiTree, variable_name: str, **assigments):
         magnitude = node.value.value[-1]
         
         new_value = default_token('NUMBER')
@@ -635,7 +638,7 @@ class MagnitudeCastHandler(TokenHandler):
 
         return tree.BiTree(
             immidiate,
-            node.lhs.value.handler.derive(node.lhs, variable_name),
+            node.lhs.value.handler.derive(node.lhs, variable_name, **assigments),
             new_value
         )
 
