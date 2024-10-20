@@ -15,3 +15,14 @@ class BiTree:
         if self.rhs is not None:
             string += f"{tabs}r:\n{self.rhs.__repr__(depth + 1)}\n"
         return string + external_tabs + ")"
+    
+    @property
+    def depth(self):
+        depth = 0
+        
+        if self.lhs is not None:
+            depth += self.lhs.depth + 1
+        if self.rhs is not None:
+            depth += self.rhs.depth + 1
+
+        return depth

@@ -59,12 +59,15 @@ def stringify(exp: tree.BiTree) -> str:
     lhs = rhs = ''
     if exp.lhs is not None:
         lhs = f'{stringify(exp.lhs)}'
-        if len(lhs) > 2:
+        if exp.lhs.depth > 1:
             lhs = f'({lhs})'
     if exp.rhs is not None:
         rhs = f'{stringify(exp.rhs)}'
-        if len(rhs) > 2:
+        if exp.rhs.depth > 1:
             rhs = f'({rhs})' 
+    if exp.value.priority > 0:
+        lhs = f'{lhs} '
+        rhs = f' {rhs}'
 
     return lhs + str(exp.value.value) + rhs
 
