@@ -28,7 +28,10 @@ class TextContainer:
             self._text[self.row] = before + char + after
 
     def delete_current_char(self):
-        self._text[self.row] = self._text[self.row][:self.col] + self._text[self.row][self.col + 1:]
+        if self.col == len(self._text[self.row]) and len(self._text) > self.row + 1:
+            self._text[self.row] += self._text.pop(self.row + 1)
+        else:
+            self._text[self.row] = self._text[self.row][:self.col] + self._text[self.row][self.col + 1:]
     def delete_back_char(self):
         self._text[self.row] = self._text[self.row][:max(0, self.col - 1)] + self._text[self.row][self.col:]
         if self.col == 0:
