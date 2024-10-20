@@ -60,6 +60,11 @@ def consume_line(line: str, expression_history, result_history, variables: dict,
             )) - 1
             if len(parameters) < required_parameters and exp.value.name == 'NAME' and exp.value.value != '_':
                 parameters.append(exp.value.value)
+                if directive == syntax.KNOWN_DIRECTIVES['get']:
+                    if len(directive_stack) > 0:
+                        directive_stack.pop()
+                    yield base.stringify(variables[parameters[-1]])
+                    parameters = []
                 continue
             
             # Finished an expression and all the required parameters. We can now attempt to complete one directive
@@ -74,6 +79,7 @@ def consume_line(line: str, expression_history, result_history, variables: dict,
             
             logging.debug(f'running {directive.__name__} on {exp}, params {parameters}, vars {variables}')
             result = directive(exp, *parameters, **variables)
+            parameters = []
             
             if isinstance(result, tree.BiTree):
                 result_history.append(result)

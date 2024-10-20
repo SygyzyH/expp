@@ -76,4 +76,7 @@ def nevaluate(exp: tree.BiTree, *_, **__) -> tree.BiTree:
     return exp
 
 def set(exp: tree.BiTree, *_, **__):
-    raise syntax_error.SyntaxError(exp.value.line, exp.value.line, 'Set directive executed by base class')
+    raise syntax_error.SyntaxError(exp.value.line, exp.value.column, 'Set directive executed by base class')
+
+def get(exp: tree.BiTree, variable_name, **variables):
+    raise syntax_error.SyntaxError(exp.value.line, exp.value.column, 'Get directive executed by base class')

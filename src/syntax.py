@@ -15,6 +15,7 @@ KNOWN_DIRECTIVES = {
     'simplify': base.simplify,
     'solve': base.solve,
     'set': base.set,
+    'get': base.get,
 }
 
 KNOWN_MAGNITUDES = {
