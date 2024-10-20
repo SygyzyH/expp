@@ -47,7 +47,7 @@ KNOWN_FUNCTIONS = {
     'sqrt': math.sqrt,
 }
 def sin_derivative(node: tree.BiTree, variable_name: str):
-    new_value = default_token('FUNC_R')
+    new_value = default_token('R_FUNC')
     new_value.value = 'cos'
     new_value.column = node.value.column
     new_value.line = node.value.line
@@ -64,7 +64,7 @@ def cos_derivative(node: tree.BiTree, variable_name: str):
 
     minus_one = tree.BiTree(None, None, new_value)
 
-    new_value = default_token('FUNC_R')
+    new_value = default_token('R_FUNC')
     new_value.value = 'sin'
     new_value.column = node.value.column
     new_value.line = node.value.line
@@ -79,7 +79,7 @@ def cos_derivative(node: tree.BiTree, variable_name: str):
     return tree.BiTree(minus_one, cos, new_value)
 
 def tan_derivative(node: tree.BiTree, variable_name: str):
-    new_value = default_token('FUNC_R')
+    new_value = default_token('R_FUNC')
     new_value.value = 'cos'
     new_value.column = node.value.column
     new_value.line = node.value.line
@@ -505,7 +505,7 @@ class ExponantiationHandler(TokenHandler):
         lhs = node.lhs.value.handler.derive(node.lhs, variable_name)
         rhs = node.rhs.value.handler.derive(node.rhs, variable_name)
 
-        new_value = default_token('FUNC_R')
+        new_value = default_token('R_FUNC')
         new_value.value = 'ln'
         new_value.column = node.value.column
         new_value.line = node.value.line
@@ -654,8 +654,8 @@ BASE_TOKENS = [
     Token('O_PAREN', r'\(', NoHandler),
     Token('C_PAREN', r'\)', NoHandler),
     Token('PAREN_BACK', r'\]', NoHandler),
-    Token('FUNC_L', r'as [' + ''.join(list(KNOWN_MAGNITUDES.keys())) + r']', MagnitudeCastHandler),
-    Token('FUNC_R', r'|'.join(list(KNOWN_FUNCTIONS)), RightFunctionHandler, priority=5),
+    Token('L_FUNC', r'as [' + ''.join(list(KNOWN_MAGNITUDES.keys())) + r']', MagnitudeCastHandler),
+    Token('R_FUNC', r'|'.join(list(KNOWN_FUNCTIONS)), RightFunctionHandler, priority=5),
     Token('CONST', r'|'.join(list(KNOWN_CONSTANTS)), ConstHandler),
     Token('NAME', r'[a-zA-Z_]+[0-9]*', NamedVariableHandler),
     Token('COMMENT', r'#.*#', NoHandler),

@@ -26,14 +26,14 @@ class PolishConstructor:
             self._stack.pop()
             if len(self._stack) > 0 and 'FUNC' in self._stack[-1].name:
                 yield self._stack.pop()
-        # TODO: FUNC_R doesn't prioritze just the next token with low priority
-        elif token.name == 'O_PAREN' or token.name == 'FUNC_R':
+        # TODO: R_FUNC doesn't prioritze just the next token with low priority
+        elif token.name == 'O_PAREN' or token.name == 'R_FUNC':
             self._stack.append(token)
         elif token.name == 'EQUAL':
             while len(self._stack) != 0:
                 yield self._stack.pop()
             self._stack.insert(0, token)
-        elif token.name == 'FUNC_L':
+        elif token.name == 'L_FUNC':
             yield token
         elif token.priority > 0:
             if len(self._stack) == 0 or token.priority > self._stack[-1].priority:

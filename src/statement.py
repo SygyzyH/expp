@@ -21,11 +21,11 @@ class StatmentConstructor:
                 assert len(self._stack) == 1, syntax_error.SyntaxError(polish_token.line, polish_token.column, 'Disjointed expression')
                 # Statement was generated
                 return self._stack.pop()
-            if polish_token.name == 'FUNC_R':
+            if polish_token.name == 'R_FUNC':
                 logging.debug("Left sided function")
                 assert len(self._stack) > 0, syntax_error.SyntaxError(polish_token.line, polish_token.column, 'Function missing argument')
                 self._stack.append(tree.BiTree(None, self._stack.pop(), polish_token))
-            elif polish_token.name == 'FUNC_L':
+            elif polish_token.name == 'L_FUNC':
                 logging.debug("Right sided function")
                 assert len(self._stack) > 0, syntax_error.SyntaxError(polish_token.line, polish_token.column, 'Function missing argument')
                 self._stack.append(tree.BiTree(self._stack.pop(), None, polish_token))
