@@ -95,6 +95,7 @@ def _start(stdscr: curses.window, input_file_contents: str):
     stdscr.refresh()
 
     char = 0
+    recompute = True
 
     try:
         while True:
@@ -114,71 +115,73 @@ def _start(stdscr: curses.window, input_file_contents: str):
             elif char == curses.KEY_RIGHT:
                 container.move_right()
             elif char == curses.KEY_DC:
+                recompute = True
                 container.delete_current_char()
             elif char in (curses.KEY_BACKSPACE, ord('\b')):
+                recompute = True
                 container.delete_back_char()
             elif char == curses.KEY_HOME:
                 container.move_start()
             elif char == curses.KEY_END:
                 container.move_end()
             elif chr(char) in TextContainer.ALLOWED_CHARS:
+                recompute = True
                 container.add_char(chr(char))
 
-            input_window.move(0, 0)
-            input_window.clear()
-            irows, icols = input_window.getmaxyx()
-            # Need to account for borders, so actual size is smaller
-            view = (irows - 2) * (container.row // (irows - 2)), (icols - 2) * (container.col // (icols - 2))
-            for i, line in enumerate(container.getbox(*view, irows - 3, icols - 1)):
-                input_window.move(i + 1, 1)
-                input_window.addstr(line)
-            input_window.move(container.row % (irows - 2) + 1, container.col % (icols - 2) + 1)
-            input_window.border()
+            if recompute:
+                input_window.move(0, 0)
+                input_window.clear()
+                irows, icols = input_window.getmaxyx()
+                # Need to account for borders, so actual size is smaller
+                view = (irows - 2) * (container.row // (irows - 2)), (icols - 2) * (container.col // (icols - 2))
+                for i, line in enumerate(container.getbox(*view, irows - 3, icols - 1)):
+                    input_window.move(i + 1, 1)
+                    input_window.addstr(line)
+                input_window.border()
 
-            #stdscr.clear()
-            output_window.move(0, 0)
-            output_window.clear()
-            output_window.border()
-            orows, ocols = output_window.getmaxyx()
-            expression_history = []
-            result_history = []
-            variables = {}
-            i = 0
-            for line_number, line in enumerate(container.getlines()[view[0]:view[0] + irows - 2]):
-                output_window.move(i + 1, 1)
-                try:
-                    results_count = 0
-                    for result in line_consumer.consume_line('\n' * (line_number + view[0]) + line, expression_history, result_history, variables, False):
-                        if result is not None:
-                            results_count += 1
-                            output_window.addnstr(f"{len(result_history)} : {result}", -1)
-                            i += len(result) // (ocols - 1)
-                            output_window.move(i + results_count + 1, 1)
-                    i += max(0, results_count - 1)
-                except (syntax_error.SyntaxError, AssertionError) as e:
-                    logging.debug(format_exc())
-                    if isinstance(e, AssertionError):
-                        e = e.args[0]
-                    output_window.addnstr(str(e), -1)
-                    i += len(str(e)) // (ocols - 1)
+                #stdscr.clear()
+                output_window.move(0, 0)
+                output_window.clear()
+                output_window.border()
+                orows, ocols = output_window.getmaxyx()
+                expression_history = []
+                result_history = []
+                variables = {}
+                i = 0
+                for line_number, line in enumerate(container.getlines()[view[0]:view[0] + irows - 2]):
+                    output_window.move(i + 1, 1)
+                    try:
+                        results_count = 0
+                        for result in line_consumer.consume_line('\n' * (line_number + view[0]) + line, expression_history, result_history, variables, False):
+                            if result is not None:
+                                results_count += 1
+                                output_window.addnstr(f"{len(result_history)} : {result}", -1)
+                                i += len(result) // (ocols - 1)
+                                output_window.move(i + results_count + 1, 1)
+                        i += max(0, results_count - 1)
+                    except (syntax_error.SyntaxError, AssertionError) as e:
+                        logging.debug(format_exc())
+                        if isinstance(e, AssertionError):
+                            e = e.args[0]
+                        output_window.addnstr(str(e), -1)
+                        i += len(str(e)) // (ocols - 1)
 
-                    if e.col + 1 >= view[1] and e.col + 1 < view[1] + icols:
-                        if view[1] > 0:
-                            e.col %= view[1]
-                        last_input_cursor = input_window.getyx()
-                        offending_character = input_window.inch(e.line - view[0], e.col + 1)
-                        input_window.addch(e.line - view[0], e.col + 1, offending_character, curses.color_pair(1))
-                        input_window.move(*last_input_cursor)
-                except Exception as e:
-                    logging.debug(format_exc())
-                    output_window.addnstr(f"{e.__class__.__name__}: {str(e)}", -1)
-                    i += len(f"{e.__class__.__name__}: {str(e)}") // (ocols -1)
-                i += 1
+                        if e.col + 1 >= view[1] and e.col + 1 < view[1] + icols:
+                            if view[1] > 0:
+                                e.col %= view[1]
+                            offending_character = input_window.inch(e.line - view[0], e.col + 1)
+                            input_window.addch(e.line - view[0], e.col + 1, offending_character, curses.color_pair(1))
+                    except Exception as e:
+                        logging.debug(format_exc())
+                        output_window.addnstr(f"{e.__class__.__name__}: {str(e)}", -1)
+                        i += len(f"{e.__class__.__name__}: {str(e)}") // (ocols -1)
+                    i += 1
+                recompute = False
 
             input_window.noutrefresh()
             output_window.noutrefresh()
             
-            stdscr.move(*input_window.getyx())
+            stdscr.move(container.row % (irows - 2) + 1, container.col % (icols - 2) + 1)
             stdscr.refresh()
 
             char = stdscr.getch()
