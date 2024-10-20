@@ -35,6 +35,8 @@ def consume_line(line: str, expression_history, result_history, variables: dict,
             assert token.value > 0, syntax_error.SyntaxError(token.line, token.column, f'Result history starts at index 1')
             assert len(result_history) > token.value - 1, syntax_error.SyntaxError(token.line, token.column, f'No item at result history {token.value}')
             exp = statment.consume_exp(result_history[token.value - 1])
+        elif token.name == 'NAME' and token.value == '_' or token.value == '__':
+            exp = statment.consume_exp(variables[token.value])
         else:
             exp = statment.consume_token(token)
         
