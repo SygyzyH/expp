@@ -66,7 +66,7 @@ def main():
         res = read_loop()
     else:
         input_text = ""
-        if args.interactive is not None:
+        if args.interactive is not None and args.interactive != True:
             input_text = args.interactive.read()
         res = textbook.start(input_text)
     if args.output_file is not None:
