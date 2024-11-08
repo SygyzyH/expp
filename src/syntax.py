@@ -19,6 +19,10 @@ KNOWN_DIRECTIVES = {
 }
 
 KNOWN_MAGNITUDES = {
+    "Tb": 1e9 * 2**10,
+    "Gb": 1e6 * 2**10,
+    "Mb": 1e3 * 2**10,
+    "kb": 2**10,
     "T": 1e12,
     "G": 1e9,
     "M": 1e6,
@@ -595,17 +599,17 @@ class RightFunctionHandler(TokenHandler):
 class MagnitudeCastHandler(TokenHandler):
     @staticmethod
     def evaluate(node: tree.BiTree | object):
-        magnitude = node.value.value[-1]
+        magnitude = node.value.value[len('as '):]
         return node.lhs.value.handler.evaluate(node.lhs) / KNOWN_MAGNITUDES[magnitude]
     
     @staticmethod
     def assign(node: tree.BiTree, **assigments):
-        magnitude = node.value.value[-1]
+        magnitude = node.value.value[len('as '):]
         return node.lhs.value.handler.assign(node.lhs, **assigments) / KNOWN_MAGNITUDES[magnitude]
     
     @staticmethod
     def simplify(node: tree.BiTree):
-        magnitude = node.value.value[-1]
+        magnitude = node.value.value[len('as '):]
         node.lhs = node.lhs.value.handler.simplify(node.lhs)
         if node.lhs.value.value == 0:
             new_value = default_token('NUMBER')
@@ -623,7 +627,7 @@ class MagnitudeCastHandler(TokenHandler):
     
     @staticmethod
     def derive(node: tree.BiTree, variable_name: str, **assigments):
-        magnitude = node.value.value[-1]
+        magnitude = node.value.value[len('as '):]
         
         new_value = default_token('NUMBER')
         new_value.value = KNOWN_MAGNITUDES[magnitude]
@@ -648,7 +652,7 @@ BASE_TOKENS = [
     Token('DIRECTIVE', r'\$' + r'|\$'.join(list(KNOWN_DIRECTIVES.keys())), NoHandler),
     Token('EXP_HISTORY', r'\$[0-9]+', NoHandler),
     Token('RESULT_HISTORY', r'\$\$[0-9]+', NoHandler),
-    Token('NUMBER', r'-?\d+(\.\d+)?j?[' + ''.join(list(KNOWN_MAGNITUDES.keys())) + r']?', NumberHandler),
+    Token('NUMBER', r'-?\d+(\.\d+)?j?(' + '|'.join(list(KNOWN_MAGNITUDES.keys())) + r')?', NumberHandler),
     Token('EQUAL', r'=', NoHandler, priority=1), # NOTE: Priority requires to be treated as an operand by polish
     Token('ADD', r'\+', AdditionHandler, priority=2),
     Token('SUB', r'-', SubtractionHandler, priority=2),
@@ -658,7 +662,7 @@ BASE_TOKENS = [
     Token('O_PAREN', r'\(', NoHandler),
     Token('C_PAREN', r'\)', NoHandler),
     Token('PAREN_BACK', r'\]', NoHandler),
-    Token('L_FUNC', r'as [' + ''.join(list(KNOWN_MAGNITUDES.keys())) + r']', MagnitudeCastHandler),
+    Token('L_FUNC', r'as (' + '|'.join(list(KNOWN_MAGNITUDES.keys())) + r')', MagnitudeCastHandler),
     Token('R_FUNC', r'|'.join(list(KNOWN_FUNCTIONS)), RightFunctionHandler, priority=5),
     Token('CONST', r'|'.join(list(KNOWN_CONSTANTS)), ConstHandler),
     Token('NAME', r'[a-zA-Z_]+[0-9]*', NamedVariableHandler),

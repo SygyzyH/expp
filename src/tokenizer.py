@@ -18,6 +18,9 @@ def tokenize(string: str):
             if value[-1] in syntax.KNOWN_MAGNITUDES:
                 scalar = syntax.KNOWN_MAGNITUDES[value[-1]]
                 value = value[:-1]
+            elif value[-2:] in syntax.KNOWN_MAGNITUDES:
+                scalar = syntax.KNOWN_MAGNITUDES[value[-2:]]
+                value = value[:-2]
             if 'j' in value:
                 value = complex(value)
             else:

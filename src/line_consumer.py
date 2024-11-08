@@ -11,6 +11,7 @@ import inspect
 DEFAULT_DIRECTIVE = base.assign
 
 def consume_line(line: str, expression_history, result_history, variables: dict, live_print: bool):
+    logging.debug(f'Consuming line "{line.lstrip(chr(0xa))}"')
     directive_stack = []
     parameters = []
     variables['_'] = result_history[-1] if len(result_history) > 0 else None
