@@ -1,7 +1,7 @@
-import syntax
-import syntax_error
-import polish
-import tree
+import language.syntax.syntax as syntax
+import language.syntax.syntax_error as syntax_error
+import language.polish as polish
+import utils.tree as tree
 
 import logging
 
@@ -18,20 +18,20 @@ class StatmentConstructor:
                 if len(self._stack) == 0:
                     # Empty expression
                     return
-                assert len(self._stack) == 1, syntax_error.SyntaxError(polish_token.line, polish_token.column, 'Disjointed expression')
+                assert len(self._stack) == 1, syntax_error.ExppSyntaxError(polish_token.line, polish_token.column, 'Disjointed expression')
                 # Statement was generated
                 return self._stack.pop()
             if polish_token.name == 'R_FUNC':
                 logging.debug("Left sided function")
-                assert len(self._stack) > 0, syntax_error.SyntaxError(polish_token.line, polish_token.column, 'Function missing argument')
+                assert len(self._stack) > 0, syntax_error.ExppSyntaxError(polish_token.line, polish_token.column, 'Function missing argument')
                 self._stack.append(tree.BiTree(None, self._stack.pop(), polish_token))
             elif polish_token.name == 'L_FUNC':
                 logging.debug("Right sided function")
-                assert len(self._stack) > 0, syntax_error.SyntaxError(polish_token.line, polish_token.column, 'Function missing argument')
+                assert len(self._stack) > 0, syntax_error.ExppSyntaxError(polish_token.line, polish_token.column, 'Function missing argument')
                 self._stack.append(tree.BiTree(self._stack.pop(), None, polish_token))
             elif polish_token.priority > 0:
                 logging.debug("Two sided function")
-                assert len(self._stack) > 1, syntax_error.SyntaxError(polish_token.line, polish_token.column, 'Operator missing argument')
+                assert len(self._stack) > 1, syntax_error.ExppSyntaxError(polish_token.line, polish_token.column, 'Operator missing argument')
                 # NOTE: The flipped order (rhs first in stack, but second in constructor)
                 rhs, lhs = self._stack.pop(), self._stack.pop()
                 self._stack.append(tree.BiTree(lhs, rhs, polish_token))

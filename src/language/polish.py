@@ -1,5 +1,5 @@
-import syntax
-import syntax_error
+import language.syntax.syntax as syntax
+import language.syntax.syntax_error as syntax_error
 
 class PolishConstructor:
     def __init__(self) -> None:
@@ -20,7 +20,7 @@ class PolishConstructor:
             # is concluded
             self._stack.insert(max(0, len(self._stack) - 1), syntax.Token('O_PAREN', '(', token.line, token.column, None))
         if token.name == 'C_PAREN' or token.name == 'PAREN_BACK':
-            assert 'O_PAREN' in self._stack, syntax_error.SyntaxError(token.line, token.column, 'Missing opening parenthesis')
+            assert 'O_PAREN' in self._stack, syntax_error.ExppSyntaxError(token.line, token.column, 'Missing opening parenthesis')
             while self._stack[-1].name != 'O_PAREN':
                 yield self._stack.pop()
             self._stack.pop()

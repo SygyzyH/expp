@@ -1,5 +1,5 @@
-import syntax_error
-import tree
+import language.syntax.syntax_error as syntax_error
+import utils.tree as tree
 
 import logging
 import copy
@@ -21,7 +21,7 @@ def simplify(exp: tree.BiTree, *_, **__):
     return exp.value.handler.simplify(exp)
 
 def solve(exp: tree.BiTree, variable: str, max_iter=MAX_SOLUTION_DEPTH, epsil=SOLUTION_EPSIL, tolerance=SOLUTION_TOLERANCE, **assigments):
-    from syntax import default_token
+    from language.syntax.syntax import default_token
     if exp.value.name == 'EQUAL':
         new_token = default_token('SUB')
         new_token.value = '-'
@@ -76,7 +76,7 @@ def nevaluate(exp: tree.BiTree, *_, **__) -> tree.BiTree:
     return exp
 
 def set(exp: tree.BiTree, *_, **__):
-    raise syntax_error.SyntaxError(exp.value.line, exp.value.column, 'Set directive executed by base class')
+    raise syntax_error.ExppSyntaxError(exp.value.line, exp.value.column, 'Set directive executed by base class')
 
 def get(exp: tree.BiTree, variable_name, **variables):
-    raise syntax_error.SyntaxError(exp.value.line, exp.value.column, 'Get directive executed by base class')
+    raise syntax_error.ExppSyntaxError(exp.value.line, exp.value.column, 'Get directive executed by base class')

@@ -1,5 +1,5 @@
-import line_consumer
-import textbook
+import interact.repl_mode as repl_mode
+import interact.textbook_mode as textbook_mode
 
 import argparse
 
@@ -12,10 +12,10 @@ Use this parser to calculate expressions including magnitudes, complex numbers, 
 
 Howto:
 - Choose a directive 
-    - eval: evaluate an expression (without knowing argument values)
-    - assign: (DEFAULT) assign all known variables and evaluate
-    - derive: derive expression with respect to argument
-    - solve: find roots of expression with all known variables
+    - $eval: evaluate an expression (without knowing argument values)
+    - $assign: (DEFAULT) assign all known variables and evaluate
+    - $derive: derive expression with respect to argument
+    - $solve: find roots of expression with all known variables
 - Write expressions
 - Access previously typed expressions with $<expression number> and results with $$<result number>
 """
@@ -34,7 +34,7 @@ def read_loop():
             line = input(">>> ")
             line_history.append(line)
 
-            for result in line_consumer.consume_line(line, expression_history, result_history, variables, True):
+            for result in repl_mode.consume_line(line, expression_history, result_history, variables, True):
                 pass
         except KeyboardInterrupt:
             logging.info('Quit')
@@ -68,7 +68,7 @@ def main():
         input_text = ""
         if args.interactive is not None and args.interactive != True:
             input_text = args.interactive.read()
-        res = textbook.start(input_text)
+        res = textbook_mode.start(input_text)
     if args.output_file is not None:
         if args.output_file == '-':
             print(res)

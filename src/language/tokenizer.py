@@ -1,6 +1,6 @@
 import re
-import syntax
-import syntax_error
+import language.syntax.syntax as syntax
+import language.syntax.syntax_error as syntax_error
 
 def tokenize(string: str):
     token_specification = [(tkn.name, tkn.regex) for tkn in syntax.BASE_TOKENS]
@@ -40,17 +40,12 @@ def tokenize(string: str):
         elif kind == 'SKIP':
             continue
         elif kind == 'MISMATCH':
-            raise syntax_error.SyntaxError(line_num, column, f'Mismatched symbol "{value}"')
-        source_token = next(_ for _ in syntax.BASE_TOKENS if _ == kind)
-        last_token = syntax.Token(
-            source_token.name,
-            source_token.regex,
-            source_token.handler,
-            source_token.priority,
-            value,
-            line_num,
-            column,
-        )
+            raise syntax_error.ExppSyntaxError(line_num, column, f'Mismatched symbol "{value}"')
+        source_token = syntax.default_token(kind)
+        source_token.value = value
+        source_token.line = line_num
+        source_token.column = column
+        last_token = source_token
 
         yield last_token
     if last_token is None or last_token.name != 'END_STATEMENT':

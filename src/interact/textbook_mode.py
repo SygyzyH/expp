@@ -1,5 +1,5 @@
-import line_consumer
-import syntax_error
+import interact.repl_mode as repl_mode
+import language.syntax.syntax_error as syntax_error
 
 import curses
 import logging
@@ -152,14 +152,14 @@ def _start(stdscr: curses.window, input_file_contents: str):
                     output_window.move(i + 1, 1)
                     try:
                         results_count = 0
-                        for result in line_consumer.consume_line('\n' * (line_number + view[0]) + line, expression_history, result_history, variables, False):
+                        for result in repl_mode.consume_line('\n' * (line_number + view[0]) + line, expression_history, result_history, variables, False):
                             if result is not None:
                                 results_count += 1
                                 output_window.addnstr(f"{len(result_history)} : {result}", -1)
                                 i += len(result) // (ocols - 1)
                                 output_window.move(i + results_count + 1, 1)
                         i += max(0, results_count - 1)
-                    except (syntax_error.SyntaxError, AssertionError) as e:
+                    except (syntax_error.ExppSyntaxError, AssertionError) as e:
                         logging.debug(format_exc())
                         if isinstance(e, AssertionError):
                             e = e.args[0]

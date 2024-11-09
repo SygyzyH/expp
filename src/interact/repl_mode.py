@@ -1,9 +1,9 @@
-import syntax
-import syntax_error
-import statement
-import tokenizer
-import base
-import tree
+import language.syntax.syntax as syntax
+import language.syntax.syntax_error as syntax_error
+import language.statement as statement
+import language.tokenizer as tokenizer
+import language.base as base
+import utils.tree as tree
 
 import logging
 import inspect
@@ -29,12 +29,12 @@ def consume_line(line: str, expression_history, result_history, variables: dict,
         # Consume the token
         if token.name == 'EXP_HISTORY':
             # Always returns None, as an expression cannot by itself complete a statement (only a END can)
-            assert token.value > 0, syntax_error.SyntaxError(token.line, token.column, f'Expression history starts at index 1')
-            assert len(expression_history) > token.value - 1, syntax_error.SyntaxError(token.line, token.column, f'No item at expression history {token.value}')
+            assert token.value > 0, syntax_error.ExppSyntaxError(token.line, token.column, f'Expression history starts at index 1')
+            assert len(expression_history) > token.value - 1, syntax_error.ExppSyntaxError(token.line, token.column, f'No item at expression history {token.value}')
             exp = statment.consume_exp(expression_history[token.value - 1])
         elif token.name == 'RESULT_HISTORY':
-            assert token.value > 0, syntax_error.SyntaxError(token.line, token.column, f'Result history starts at index 1')
-            assert len(result_history) > token.value - 1, syntax_error.SyntaxError(token.line, token.column, f'No item at result history {token.value}')
+            assert token.value > 0, syntax_error.ExppSyntaxError(token.line, token.column, f'Result history starts at index 1')
+            assert len(result_history) > token.value - 1, syntax_error.ExppSyntaxError(token.line, token.column, f'No item at result history {token.value}')
             exp = statment.consume_exp(result_history[token.value - 1])
         elif token.name == 'NAME' and token.value == '_' or token.value == '__':
             exp = statment.consume_exp(variables[token.value])
@@ -73,7 +73,7 @@ def consume_line(line: str, expression_history, result_history, variables: dict,
                 directive_stack.pop()
 
             if directive == syntax.KNOWN_DIRECTIVES['set']:
-                assert exp.value.name == 'EQUAL' and exp.lhs.value.name == 'NAME', syntax_error.SyntaxError(token.line, token.column, f'Directive "set" requires left-hand-side to be a name, and operator to be equality.')
+                assert exp.value.name == 'EQUAL' and exp.lhs.value.name == 'NAME', syntax_error.ExppSyntaxError(token.line, token.column, f'Directive "set" requires left-hand-side to be a name, and operator to be equality.')
                 variables[exp.lhs.value.value] = exp.rhs
                 yield base.stringify(exp)
                 continue
@@ -92,4 +92,4 @@ def consume_line(line: str, expression_history, result_history, variables: dict,
                 print(f"result {len(result_history)}: {base.stringify(result_history[-1])}")
 
             yield base.stringify(result_history[-1])
-    assert len(directive_stack) == 0, syntax_error.SyntaxError(token.line, token.column, f'Directive[s]: {", ".join([_.__name__ for _ in directive_stack])} cannot be completed')
+    assert len(directive_stack) == 0, syntax_error.ExppSyntaxError(token.line, token.column, f'Directive[s]: {", ".join([_.__name__ for _ in directive_stack])} cannot be completed')
