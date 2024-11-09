@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from functools import cache
+from functools import cached_property
 
 @dataclass
 class BiTree:
@@ -17,8 +17,7 @@ class BiTree:
             string += f"{tabs}r:\n{self.rhs.__repr__(depth + 1)}\n"
         return string + external_tabs + ")"
     
-    @property
-    @cache
+    @cached_property
     def depth(self):
         depth = 0
         
