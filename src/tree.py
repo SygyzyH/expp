@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import cache
 
 @dataclass
 class BiTree:
@@ -17,6 +18,7 @@ class BiTree:
         return string + external_tabs + ")"
     
     @property
+    @cache
     def depth(self):
         depth = 0
         
